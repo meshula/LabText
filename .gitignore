@@ -15,3 +15,5 @@
 # XCode stuff
 *.hmap
 *.xcuserstate
+
+obj/
