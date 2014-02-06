@@ -47,7 +47,7 @@ char const* tsScanForWhiteSpace(
 	while (pCurr < pEnd && !tsIsWhiteSpace(*pCurr))
 		++pCurr;
 
-	return pCurr;
+	return pCurr+1;
 }
 
 char const* tsScanForNonWhiteSpace(
