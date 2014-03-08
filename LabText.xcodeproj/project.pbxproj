@@ -13,6 +13,7 @@
 		3650544057C90D60247C7AF4 /* TextScanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 28840103726157C158CC3DA1 /* TextScanner.cpp */; };
 		4A115EF213966F5C142F3921 /* dict.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0ECB4FBD17BC483B58786CA7 /* dict.cpp */; };
 		57F86E7F71D37C6F0FC554FA /* itoa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51762A5C2E1A69B261F55BC2 /* itoa.cpp */; };
+		E2FAF53018C8D5CB00FCCE4C /* Dictionary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E2FAF52E18C8D5CB00FCCE4C /* Dictionary.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,8 @@
 		746D584145787BE8517E59D7 /* ftoa.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ftoa.h; sourceTree = "<group>"; };
 		776802621E327BE12FBD5DFB /* TextScannerLib.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TextScannerLib.cpp; sourceTree = "<group>"; };
 		7FD3035F114C47857DA64BD8 /* ftoa.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ftoa.cpp; sourceTree = "<group>"; };
+		E2FAF52D18C8D53800FCCE4C /* Dictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Dictionary.h; sourceTree = "<group>"; };
+		E2FAF52E18C8D5CB00FCCE4C /* Dictionary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dictionary.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +69,8 @@
 				27FC3EAE1A0D676E00407725 /* itoa.h */,
 				5423720808EE7DF360274C5F /* zmalloc.cpp */,
 				27892C3D6CCF3FC13E8F4C9C /* zmalloc.h */,
+				E2FAF52D18C8D53800FCCE4C /* Dictionary.h */,
+				E2FAF52E18C8D5CB00FCCE4C /* Dictionary.cpp */,
 			);
 			path = LabText;
 			sourceTree = "<group>";
@@ -146,6 +151,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3650544057C90D60247C7AF4 /* TextScanner.cpp in Sources */,
+				E2FAF53018C8D5CB00FCCE4C /* Dictionary.cpp in Sources */,
 				327521BA3F847FD2463E2700 /* TextScannerLib.cpp in Sources */,
 				4A115EF213966F5C142F3921 /* dict.cpp in Sources */,
 				11CB499700C468FA319B50FC /* ftoa.cpp in Sources */,
