@@ -30,11 +30,11 @@ namespace TextScanner
 	template <class Type> inline bool IsAlpha(Type test)		{ return ((test >= 'a' && test <= 'z') || (test >= 'A' && test <= 'Z'));	}
 
 	// a zillion times faster than Split.
-	// This class, given a string, creates an array caching the split parts of the string
+	// This template, given a string, creates an array caching the split parts of the string
+    // templated on string and type so that wide strings can be split.
 	
 	template <typename T, typename TChar>
-    class Splitter
-    {
+    class Splitter {
     public:
         Splitter(const T& src, TChar splitter)
         {
@@ -59,13 +59,38 @@ namespace TextScanner
             parts[count] = 0;
         }
 		
-        ~Splitter()
-        {
-        }
-		
+        ~Splitter(){}
+
         TChar*  parts[64];       // max parts
         TChar   buffer[520];     // MAX_PATH
         int     count;
+    };
+
+    // and another. http://stackoverflow.com/questions/236129/how-to-split-a-string-in-c
+    template < class ContainerT >
+    void tokenize(const std::string& str, ContainerT& tokens,
+                  const std::string& delimiters = " ", bool trimEmpty = false)
+    {
+        std::string::size_type pos, lastPos = 0;
+        while (true) {
+            pos = str.find_first_of(delimiters, lastPos);
+            if (pos == std::string::npos) {
+                pos = str.length();
+
+                if( pos != lastPos || !trimEmpty)
+                    tokens.push_back(ContainerT::value_type(str.data()+lastPos,
+                                                            (typename ContainerT::value_type::size_type) pos-lastPos ));
+
+                break;
+            }
+            else {
+                if (pos != lastPos || !trimEmpty)
+                    tokens.push_back(ContainerT::value_type(str.data()+lastPos,
+                                                            (typename ContainerT::value_type::size_type) pos-lastPos ));
+            }
+            
+            lastPos = pos + 1;
+        }
     };
 	
     // returns everything to the left of the last separator character

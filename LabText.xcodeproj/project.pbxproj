@@ -30,6 +30,7 @@
 		746D584145787BE8517E59D7 /* ftoa.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ftoa.h; sourceTree = "<group>"; };
 		776802621E327BE12FBD5DFB /* TextScannerLib.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TextScannerLib.cpp; sourceTree = "<group>"; };
 		7FD3035F114C47857DA64BD8 /* ftoa.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ftoa.cpp; sourceTree = "<group>"; };
+		E2C0123A18D74FEA0000CB07 /* TextScanner.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TextScanner.hpp; sourceTree = "<group>"; };
 		E2FAF52D18C8D53800FCCE4C /* Dictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Dictionary.h; sourceTree = "<group>"; };
 		E2FAF52E18C8D5CB00FCCE4C /* Dictionary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dictionary.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -59,6 +60,7 @@
 			children = (
 				28840103726157C158CC3DA1 /* TextScanner.cpp */,
 				64214A3C57A74C42170A2562 /* TextScanner.h */,
+				E2C0123A18D74FEA0000CB07 /* TextScanner.hpp */,
 				776802621E327BE12FBD5DFB /* TextScannerLib.cpp */,
 				20A9632744CA4BDA62BA527B /* config.h */,
 				0ECB4FBD17BC483B58786CA7 /* dict.cpp */,
