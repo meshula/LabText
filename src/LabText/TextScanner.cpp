@@ -40,21 +40,34 @@ std::vector<std::string> TextScanner::Split(const std::string& input, const std:
 		const char* c = input.c_str();
 		const char* split = strstr(c, splitter.c_str());
 		if (!split)
-			output.push_back(input);
+			output.emplace_back(input);
 		else {
 			while (split) {
 				if (c != split)
-					output.push_back(std::string(c, split - c));
+					output.emplace_back(c, split - c);
 				c = split + splitter.length();
 				split = strstr(c, splitter.c_str());
 			}
 			if (strlen(c) > 0)
-				output.push_back(std::string(c));
+				output.emplace_back(c);
 		}
 	}
 	return output;
 }
 
+std::vector<std::string> Split(const std::string& s, char separator)
+{
+    std::vector<std::string> result;
+    std::string::size_type p = 0;
+    std::string::size_type q;
+    while ((q = s.find(separator, p)) != std::string::npos) {
+        result.emplace_back(s, p, q - p);
+        p = q + 1;
+    }
+    
+    result.emplace_back(s, p);
+    return result;
+}
 
 // given a string, split it into components, at the splitter character.
 // if escapes are allowed, an escaped splitter won't split
@@ -87,16 +100,16 @@ vector<string> TextScanner::Split(const string& input, char splitter, bool escap
                 {
                     if (curr>start)
                     {
-                        output.push_back(input.substr(start, curr-start));
+                        output.emplace_back(input.substr(start, curr-start));
                     }
                     else if (empties && curr == 0)
                     {
-                        output.push_back("");
+                        output.emplace_back("");
                     }
                     start = curr+1;
                     if (empties && (input[start] == splitter || start == end))
                     {
-                        output.push_back("");
+                        output.emplace_back("");
                         ++start;
                         ++curr;
                     }
@@ -105,7 +118,7 @@ vector<string> TextScanner::Split(const string& input, char splitter, bool escap
             }
         }
         if (curr - start > 0)
-            output.push_back(input.substr(start, curr-start));
+            output.emplace_back(input.substr(start, curr-start));
     }
 
 

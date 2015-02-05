@@ -119,7 +119,7 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0600;
 			};
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "LabText" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -165,39 +165,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		156C027F6B1009F3352D1EB0 /* Debug Native 32-bit */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
-				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
-				COPY_PHASE_STRIP = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					DEBUG,
-					__MACOSX_CORE__,
-					OSX,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = src;
-				OBJROOT = obj/x32/Debug;
-				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CFLAGS = (
-					"-std=c++11",
-					"-stdlib=libc++",
-				);
-				SDKROOT = macosx;
-				SYMROOT = build/Debug;
-			};
-			name = "Debug Native 32-bit";
-		};
-		26864BF035F63D7E52314FB9 /* Debug Native 32-bit */ = {
+		415971936E5E127904691F58 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = build/Debug;
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
@@ -205,54 +178,14 @@
 				PRODUCT_NAME = LabText;
 				VALID_ARCHS = x86_64;
 			};
-			name = "Debug Native 32-bit";
+			name = Debug;
 		};
-		3E8A10466FB1019C67DD71EA /* Release Native 32-bit */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
-				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_OPTIMIZATION_LEVEL = s;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					NDEBUG,
-					__MACOSX_CORE__,
-					OSX,
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = src;
-				OBJROOT = obj/x32/Release;
-				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CFLAGS = (
-					"-std=c++11",
-					"-stdlib=libc++",
-				);
-				SDKROOT = macosx;
-				SYMROOT = build/Release;
-			};
-			name = "Release Native 32-bit";
-		};
-		415971936E5E127904691F58 /* Debug Native 64-bit */ = {
+		567013CD0A8D64C27D346951 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = build/Debug;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_MODEL_TUNING = G5;
-				INSTALL_PATH = /usr/local/lib;
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_NAME = LabText;
-				VALID_ARCHS = x86_64;
-			};
-			name = "Debug Native 64-bit";
-		};
-		567013CD0A8D64C27D346951 /* Release Native 64-bit */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = build/Release;
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
@@ -261,9 +194,9 @@
 				PRODUCT_NAME = LabText;
 				VALID_ARCHS = x86_64;
 			};
-			name = "Release Native 64-bit";
+			name = Release;
 		};
-		6DAD0D51765B668139010256 /* Debug Native 64-bit */ = {
+		6DAD0D51765B668139010256 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
@@ -289,24 +222,9 @@
 				SDKROOT = macosx;
 				SYMROOT = build/Debug;
 			};
-			name = "Debug Native 64-bit";
+			name = Debug;
 		};
-		701E029D46CF403313EF66C9 /* Release Native 32-bit */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CONFIGURATION_BUILD_DIR = build/Release;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_MODEL_TUNING = G5;
-				INSTALL_PATH = /usr/local/lib;
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_NAME = LabText;
-				VALID_ARCHS = x86_64;
-			};
-			name = "Release Native 32-bit";
-		};
-		7CC92D9C67D856F25C792BBE /* Release Native 64-bit */ = {
+		7CC92D9C67D856F25C792BBE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
@@ -331,7 +249,7 @@
 				SDKROOT = macosx;
 				SYMROOT = build/Release;
 			};
-			name = "Release Native 64-bit";
+			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
@@ -339,24 +257,20 @@
 		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "LabText" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				156C027F6B1009F3352D1EB0 /* Debug Native 32-bit */,
-				6DAD0D51765B668139010256 /* Debug Native 64-bit */,
-				3E8A10466FB1019C67DD71EA /* Release Native 32-bit */,
-				7CC92D9C67D856F25C792BBE /* Release Native 64-bit */,
+				6DAD0D51765B668139010256 /* Debug */,
+				7CC92D9C67D856F25C792BBE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = "Debug Native 32-bit";
+			defaultConfigurationName = Debug;
 		};
 		500052E437392BC11E787737 /* Build configuration list for PBXNativeTarget "LabText" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				26864BF035F63D7E52314FB9 /* Debug Native 32-bit */,
-				415971936E5E127904691F58 /* Debug Native 64-bit */,
-				701E029D46CF403313EF66C9 /* Release Native 32-bit */,
-				567013CD0A8D64C27D346951 /* Release Native 64-bit */,
+				415971936E5E127904691F58 /* Debug */,
+				567013CD0A8D64C27D346951 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = "Debug Native 32-bit";
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};

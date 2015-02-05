@@ -16,6 +16,9 @@ namespace TextScanner
 	// the resulting strings won't include the splitter string.
 	std::vector<std::string>   Split(const std::string& input, const std::string& splitter);
 	
+    // given a string, split it into components, at the splitter character.
+    std::vector<std::string>  Split(const std::string& s, char separator);
+    
 	// given a string, split it into components, at the splitter character.
     // if escapes are allowed, an escaped splitter won't split
     // if empties are allowed, empty strings will get pushed, otherwise not
@@ -36,20 +39,16 @@ namespace TextScanner
 	template <typename T, typename TChar>
     class Splitter {
     public:
-        Splitter(const T& src, TChar splitter)
-        {
+        Splitter(const T& src, TChar splitter) {
             count = 0;
             TChar* curr = buffer;
             parts[count++] = curr;
             const TChar* srcPtr = src.c_str();
-            while (*srcPtr)
-            {
-                if (*srcPtr != splitter)
-                {
+            while (*srcPtr) {
+                if (*srcPtr != splitter) {
                     *curr++ = *srcPtr++;
                 }
-                else
-                {
+                else {
                     *curr++ = '\0';
                     parts[count++] = curr;
                     ++srcPtr;
@@ -69,8 +68,7 @@ namespace TextScanner
     // and another. http://stackoverflow.com/questions/236129/how-to-split-a-string-in-c
     template < class ContainerT >
     void tokenize(const std::string& str, ContainerT& tokens,
-                  const std::string& delimiters = " ", bool trimEmpty = false)
-    {
+                  const std::string& delimiters = " ", bool trimEmpty = false) {
         std::string::size_type pos, lastPos = 0;
         while (true) {
             pos = str.find_first_of(delimiters, lastPos);
