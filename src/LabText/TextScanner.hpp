@@ -109,7 +109,7 @@ namespace TextScanner
 	void testSplitter();
 #endif
 
-    inline uint64_t Hash(const char *buf, int len) {
+    inline uint64_t Hash(const char *buf, size_t len) {
         uint64_t hash = 5381;
         while (len--)
             hash = ((hash << 5) + hash) + (*buf++); /* hash * 33 + c */
