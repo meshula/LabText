@@ -45,7 +45,7 @@ bool isNaN(float v)
 
 float roundingSummand(float f, int maxLength, int* dezmialPointPos)
 {
-	float fabs = abs(f);
+	float fabs = fabsf(f);
 	*dezmialPointPos = 0;
 	
 	if ( fabs < 0.00001 )

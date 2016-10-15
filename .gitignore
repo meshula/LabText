@@ -17,3 +17,5 @@
 *.xcuserstate
 
 obj/
+xcuserdata/
+
