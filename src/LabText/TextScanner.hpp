@@ -4,8 +4,7 @@
  *
  */
 
-#ifndef TEXTSCANNER_HPP
-#define TEXTSCANNER_HPP
+#pragma once
 
 #include <string>   // for split/join
 #include <vector>   // for split/join
@@ -109,7 +108,12 @@ namespace TextScanner
 #ifdef RUN_UNITTEST
 	void testSplitter();
 #endif
+
+    inline uint64_t Hash(const char *buf, size_t len) {
+        uint64_t hash = 5381;
+        while (len--)
+            hash = ((hash << 5) + hash) + (*buf++); /* hash * 33 + c */
+        return hash;
+    }
 	
 }
-
-#endif // TEXTSCANNER_HPP
