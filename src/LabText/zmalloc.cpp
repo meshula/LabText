@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
+#include <mutex>
 #include "config.h"
 #include "zmalloc.h"
 
@@ -62,9 +62,8 @@
     size_t _n = (__n); \
     if (_n&(sizeof(long)-1)) _n += sizeof(long)-(_n&(sizeof(long)-1)); \
     if (zmalloc_thread_safe) { \
-        pthread_mutex_lock(&used_memory_mutex);  \
+		std::lock_guard<std::mutex> guard(used_memory_mutex); \
         used_memory += _n; \
-        pthread_mutex_unlock(&used_memory_mutex); \
     } else { \
         used_memory += _n; \
     } \
@@ -74,9 +73,8 @@
     size_t _n = (__n); \
     if (_n&(sizeof(long)-1)) _n += sizeof(long)-(_n&(sizeof(long)-1)); \
     if (zmalloc_thread_safe) { \
-        pthread_mutex_lock(&used_memory_mutex);  \
-        used_memory -= _n; \
-        pthread_mutex_unlock(&used_memory_mutex); \
+		std::lock_guard<std::mutex> guard(used_memory_mutex); \
+		used_memory -= _n; \
     } else { \
         used_memory -= _n; \
     } \
@@ -84,7 +82,7 @@
 
 static size_t used_memory = 0;
 static int zmalloc_thread_safe = 0;
-pthread_mutex_t used_memory_mutex = PTHREAD_MUTEX_INITIALIZER;
+std::mutex used_memory_mutex;
 
 static void zmalloc_oom(size_t size) {
     fprintf(stderr, "zmalloc: Out of memory trying to allocate %zu bytes\n",
@@ -180,9 +178,13 @@ char *zstrdup(const char *s) {
 size_t zmalloc_used_memory(void) {
     size_t um;
 
-    if (zmalloc_thread_safe) pthread_mutex_lock(&used_memory_mutex);
-    um = used_memory;
-    if (zmalloc_thread_safe) pthread_mutex_unlock(&used_memory_mutex);
+	if (zmalloc_thread_safe) {
+		std::lock_guard<std::mutex> guard(used_memory_mutex);
+		um = used_memory;
+	}
+	else
+		um = used_memory;
+
     return um;
 }
 

@@ -52,6 +52,7 @@ size_t uitoa(unsigned int value, char* buffer, unsigned char radix)
 	return bytesWritten;
 }
 
+#ifndef _MSC_VER
 
 size_t itoa(int value, char* buffer, unsigned char radix)
 {
@@ -67,3 +68,5 @@ size_t itoa(int value, char* buffer, unsigned char radix)
 		return uitoa( value, p, radix);
 	}
 }
+
+#endif

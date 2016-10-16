@@ -12,6 +12,7 @@
 #include "itoa.h"
 #include <float.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <math.h>
 	
@@ -137,7 +138,8 @@ char* ftoa_no_exponent(float f, char* buffer, int maxLength)
 		*p++ = '0';
 	else
 	{
-		size_t bytesWritten = itoa( int_part, p, 10);
+		itoa( int_part, p, 10);
+		size_t bytesWritten = strlen(p);
 		p += bytesWritten;
 	}
 	
@@ -237,7 +239,8 @@ int ftoa(float f, char* buffer)
 		p = ftoa_no_exponent(f*factor, buffer,6);
 		
 		*p++ = 'e';
-		size_t bytesWritten = itoa( exp10, p, 10);
+		itoa( exp10, p, 10);
+		size_t bytesWritten = strlen(p);
 		p += bytesWritten;
 	}
 	else

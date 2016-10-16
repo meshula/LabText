@@ -15,10 +15,6 @@ while using this code.
 #include <assert.h>
 #define Assert assert
 
-#ifdef _MSC_VER
-using std::powf;
-#endif
-
 //----------------------------------------------------------------------------
 
 char const* tsScanForQuote(

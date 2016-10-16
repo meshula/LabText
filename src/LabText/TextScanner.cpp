@@ -14,7 +14,7 @@ while using this code.
 #include <windows.h>    // for unicode conversions
 #endif
 
-#ifdef PLATFORM_MACOSX
+#ifdef PLATFORM_DARWIN
 #include <libkern/OSTypes.h>
 #include <stddef.h>
 #endif
@@ -64,7 +64,7 @@ std::vector<std::string> Split(const std::string& s, char separator)
         result.emplace_back(s, p, q - p);
         p = q + 1;
     }
-    
+
     result.emplace_back(s, p);
     return result;
 }
@@ -125,7 +125,7 @@ vector<string> TextScanner::Split(const string& input, char splitter, bool escap
     return output;
 }
 
-string 
+string
 TextScanner::Join(const vector<string>& input, const string& join)
 {
     string result;
@@ -140,7 +140,7 @@ TextScanner::Join(const vector<string>& input, const string& join)
 }
 
 
-void 
+void
 TextScanner::Parsef(const std::string& text, float& res)
 {
     char const* pCurr = text.c_str();
@@ -148,7 +148,7 @@ TextScanner::Parsef(const std::string& text, float& res)
 	/*pCurr =*/ tsGetFloat(pCurr, pEnd, &res);
 }
 
-void 
+void
 TextScanner::ParseFloats(const std::string& text, float* output, size_t count)
 {
     char const* pCurr = text.c_str();
@@ -163,7 +163,7 @@ TextScanner::ParseFloats(const std::string& text, float* output, size_t count)
 }
 
 
-std::string 
+std::string
 TextScanner::Path(const std::string& filepath)
 {
     std::string path;
@@ -175,7 +175,7 @@ TextScanner::Path(const std::string& filepath)
     return path;
 }
 
-std::string 
+std::string
 TextScanner::BaseName(const std::string& filepath)
 {
     std::string path;
@@ -232,14 +232,14 @@ std::wstring TextScanner::Unicode(const std::string& input)
         wchar_t* temp = (wchar_t*) alloca(len);
         MultiByteToWideChar( CP_ACP, 0, input.c_str(), (int)input.length() + 1, temp, len);
         return temp;
-#elif defined(PLATFORM_MACOSX)
+#elif defined(PLATFORM_DARWIN)
 #if 0
 		@TODO - how do you get this stuff now? maybe carbon has to be added as a framework?
 		static OSStatus status;
 		static TECObjectRef converter;
 		static TextEncoding utf8Encoding;
 		static TextEncoding unicodeEncoding;
-		
+
 		static bool init = true;
 		if (init)
 		{
@@ -248,17 +248,17 @@ std::wstring TextScanner::Unicode(const std::string& input)
 			unicodeEncoding = CreateTextEncoding(kTextEncodingUnicodeDefault,
 												 kUnicodeNoSubset, kUnicode16BitFormat);
 			status = TECCreateConverter(&converter, utf8Encoding, unicodeEncoding);
-			
+
 			init = false;
 		}
-		
+
 		ByteCount inBufBytesRead;
 		ByteCount bufSize = input.length() * 4 + 4;
 		wchar_t* outBuf = (wchar_t*) alloca(bufSize);
 		ByteCount outBufBytesWritten;
 		status = TECConvertText(converter, (const UInt8*) input.c_str(), input.length(), &inBufBytesRead,
 								(UInt8*) outBuf, bufSize, &outBufBytesWritten);
-		
+
 		return std::wstring(outBuf);
 #endif
 		return L"";
@@ -273,7 +273,7 @@ std::string TextScanner::UTF8(const std::wstring& input)
     char* temp = (char*) alloca(input.length() + 1);
     WideCharToMultiByte( CP_ACP, 0, input.c_str(), -1, temp, (int) input.length() + 1, NULL, NULL );
 	return temp;
-#elif defined(PLATFORM_MACOSX)
+#elif defined(PLATFORM_DARWIN)
 	char outBuf[512];
 
 #if 0
@@ -282,7 +282,7 @@ std::string TextScanner::UTF8(const std::wstring& input)
 	static TECObjectRef converter;
 	static TextEncoding utf8Encoding;
 	static TextEncoding unicodeEncoding;
-	
+
 	static bool init = true;
 	if (init)
 	{
@@ -293,14 +293,14 @@ std::string TextScanner::UTF8(const std::wstring& input)
 		status = TECCreateConverter(&converter, unicodeEncoding, utf8Encoding);
 		init = false;
 	}
-	
+
 	ByteCount inBufBytesRead;
 	ByteCount outBufBytesWritten;
 	char outBuf[512];
 	status = TECConvertText(converter, (const UInt8*) input.c_str(), input.length() * 4 + 4, &inBufBytesRead,
 							(UInt8*) outBuf, 512, &outBufBytesWritten);
 	// for UTF16 to UTF8 conversion you don't need to call TECFlushText
-	
+
 	// 3. Dispose of converter (once at end) dp currently leaking
 	//status = TECDisposeConverter(converter);
 	return outBuf;

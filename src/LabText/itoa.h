@@ -26,6 +26,10 @@
 #endif
 
 EXTERNC size_t uitoa(unsigned int, char* buffer, unsigned char radix);
+
+#ifndef _MSC_VER
+// MSVC stdlib provides itoa
 EXTERNC size_t itoa(signed int, char* buffer, unsigned char radix);
+#endif
 
 #endif // __COMMON_ITOA_H__
