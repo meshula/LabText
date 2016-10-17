@@ -21,6 +21,10 @@ while using this code.
 
 #include <cmath>
 
+#include <string.h>
+#include <vector>
+#include <string>
+
 //! @todo replace Assert with proper error reporting mechanism
 
 #include <assert.h>

@@ -8,6 +8,7 @@
 
 #include "Dictionary.h"
 #include <stdlib.h>
+#include <string.h>
 
 static unsigned int _dictStringCopyHTHashFunction(const void *key)
 {

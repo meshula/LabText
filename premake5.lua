@@ -15,6 +15,10 @@ project "libLabText"
     files { "src/**.h", "src/**.cpp", "src/**.c" }
     excludes { }
 
+    configurations { "linux", "gmake" }
+        buildoptions { "-std=c++11" }
+
+
     filter { "platforms:Windows" }
         system "windows"
         defines { "PLATFORM_WINDOWS" }
