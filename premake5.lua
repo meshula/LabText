@@ -1,37 +1,49 @@
 
+
 workspace "LabText"
-    configurations { "Debug", "Release" }
-    architecture "x86_64"
---    platforms { "Windows", "Linux", "macOS" }
 
---    targetdir ("local/bin/%{prj.name}/%{cfg.longname}")
---    objdir ("build/obj/%{prj.name}/%{cfg.longname}")
+configurations { "Debug", "Release" }
+architecture "x86_64"
 
-project "libLabText"
+objdir ("../build/obj/%{cfg.longname}/%{prj.name}")
+
+platforms {
+        "linux",
+        "macosx",
+        "windows"
+    }
+
+filter "system:linux"
+    system "linux"
+    defines { "PLATFORM_LINUX" }
+    buildoptions { "-std=c++11" }
+
+filter "system:windows"
+    system "windows"
+    defines { "PLATFORM_WINDOWS" }
+
+filter "system:macosx"
+    system "macosx"
+    defines { "PLATFORM_DARWIN" }
+
+filter {}
+
+filter "configurations:Debug"
+    defines { "DEBUG" }
+    symbols "On"
+
+filter "configurations:Release"
+    defines { "NDEBUG" }
+    optimize "On"
+
+filter {}
+
+project "LabText"
     kind "StaticLib"
     language "C++"
+
+    targetdir ("../local/lib/%{cfg.longname}")
 
     includedirs { "src" }
     files { "src/**.h", "src/**.cpp", "src/**.c" }
     excludes { }
-
-    configurations { "linux", "gmake" }
-        buildoptions { "-std=c++11" }
-
-
-    filter { "platforms:Windows" }
-        system "windows"
-        defines { "PLATFORM_WINDOWS" }
-
---    filter { "platforms:macOS" }
---        system "macosx"
---        buildoptions { "-std=c++11", "-stdlib=libc++" }
---        defines { "PLATFORM_DARWIN" }
-
-    filter { "configurations:Debug" }
-        defines { "DEBUG" }
-        symbols "On"
-
-    filter { "configurations:Release" }
-        defines { "NDEBUG" }
-        optimize "On"
