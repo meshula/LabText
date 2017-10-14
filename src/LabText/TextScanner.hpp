@@ -13,18 +13,18 @@ namespace TextScanner
 {
 	// given an input string, split it up wherever the splitter string is found.
 	// the resulting strings won't include the splitter string.
-	std::vector<std::string>   Split(const std::string& input, const std::string& splitter);
-	
+	std::vector<std::string>  Split(const std::string& input, const std::string& splitter);
+
     // given a string, split it into components, at the splitter character.
     std::vector<std::string>  Split(const std::string& s, char separator);
-    
+
 	// given a string, split it into components, at the splitter character.
     // if escapes are allowed, an escaped splitter won't split
     // if empties are allowed, empty strings will get pushed, otherwise not
     // ";" yields two empties if empties are allowed, zero otherwise.
-	
+
     std::vector<std::string>	Split(const std::string& input, char splitter, bool escapes, bool empties);
-    std::string					Join(const std::vector<std::string>& input, const std::string& join);	
+    std::string					Join(const std::vector<std::string>& input, const std::string& join);
 
 	// Simple Tests
 	template <class Type> inline bool IsWhiteSpace(Type test)	{ return (test == 9 || test == ' ' || test == 13 || test == 10);	}
@@ -34,7 +34,7 @@ namespace TextScanner
 	// a zillion times faster than Split.
 	// This template, given a string, creates an array caching the split parts of the string
     // templated on string and type so that wide strings can be split.
-	
+
 	template <typename T, typename TChar>
     class Splitter {
     public:
@@ -56,7 +56,7 @@ namespace TextScanner
             *curr++ = '\0'; // terminate final string
             parts[count] = 0;
         }
-		
+
         ~Splitter(){}
 
         TChar*  parts[64];       // max parts
@@ -85,26 +85,26 @@ namespace TextScanner
                     tokens.push_back(ContainerT::value_type(str.data()+lastPos,
                                                             (typename ContainerT::value_type::size_type) pos-lastPos ));
             }
-            
+
             lastPos = pos + 1;
         }
     };
-	
+
     // returns everything to the left of the last separator character
-	
+
 	std::string		Path(const std::string& filepath);
     std::string		BaseName(const std::string& filepath);
     std::string		Extension(const std::string& filepath);
     std::wstring	Extension(const std::wstring& filepath);
-	
+
 	// Unicode <> UTF8 translators
-	
+
     std::wstring	Unicode(const std::string& input);
     std::string		UTF8(const std::wstring& input);
-	
+
 	void			Parsef(const std::string& text, float& res);
 	void			ParseFloats(const std::string& text, float* output, size_t count);
-	
+
 #ifdef RUN_UNITTEST
 	void testSplitter();
 #endif
@@ -115,5 +115,5 @@ namespace TextScanner
             hash = ((hash << 5) + hash) + (*buf++); /* hash * 33 + c */
         return hash;
     }
-	
+
 }
