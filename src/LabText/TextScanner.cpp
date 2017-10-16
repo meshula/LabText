@@ -20,7 +20,7 @@ while using this code.
 #endif
 
 #include <cmath>
-
+#include <algorithm>
 #include <sstream>
 #include <string.h>
 #include <vector>
@@ -353,6 +353,22 @@ std::string TextScanner::UTF8(const std::wstring& input)
 #endif
 	return "";
 }
+
+
+std::string TextScanner::ToUpper(const std::string& s)
+{
+	string r = s;
+	std::transform(r.begin(), r.end(), r.begin(), ::toupper);
+	return r;
+}
+
+std::string TextScanner::ToLower(const std::string& s)
+{
+	string r = s;
+	std::transform(r.begin(), r.end(), r.begin(), ::tolower);
+	return r;
+}
+
 
 #ifdef RUN_UNITTEST
 

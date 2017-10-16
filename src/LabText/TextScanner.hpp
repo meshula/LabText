@@ -112,6 +112,8 @@ namespace TextScanner
 	void testSplitter();
 #endif
 
+	std::string ToUpper(const std::string& s);
+	std::string ToLower(const std::string& s);
 
     std::string StripLeadingWhitespace(const std::string& s);
     std::string StripTrailingWhitespace(const std::string& s);
