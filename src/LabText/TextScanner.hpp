@@ -18,6 +18,9 @@ namespace TextScanner
     // given a string, split it into components, at the splitter character.
     std::vector<std::string>  Split(const std::string& s, char separator);
 
+	// given a string, split it into lines separated by \n, \r, or \r\n
+	std::vector<std::string>    SplitLines(const std::string& input);
+
 	// given a string, split it into components, at the splitter character.
     // if escapes are allowed, an escaped splitter won't split
     // if empties are allowed, empty strings will get pushed, otherwise not

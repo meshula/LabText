@@ -21,6 +21,7 @@ while using this code.
 
 #include <cmath>
 
+#include <sstream>
 #include <string.h>
 #include <vector>
 #include <string>
@@ -86,6 +87,18 @@ std::vector<std::string> TextScanner::Split(const std::string& input, const std:
 	}
 	return output;
 }
+
+std::vector<std::string> TextScanner::SplitLines(const std::string& input)
+{
+	std::vector<string> output;
+	std::stringstream stream(input);
+	std::string str;
+	if (stream)
+		while (std::getline(stream, str, '\r'))
+			output.push_back(str[0] == '\n'? str.substr(1) : str);
+	return output;
+}
+
 
 std::vector<std::string> Split(const std::string& s, char separator)
 {
