@@ -37,6 +37,34 @@ using std::powf;
 using std::vector;
 using std::string;
 
+std::string TextScanner::StripLeadingWhitespace(const std::string& s)
+{
+    size_t nws = 0;
+    size_t len = s.length();
+    while (nws < len && TextScanner::IsWhiteSpace(s[nws]))
+        ++nws;
+
+    if (!nws)
+        return s;
+
+    return s.substr(nws);
+}
+
+std::string TextScanner::StripTrailingWhitespace(const std::string& s)
+{
+    if (!s.length())
+        return s;
+
+    size_t len = s.length() - 1;
+    while (len >= 0 && TextScanner::IsWhiteSpace(s[len]))
+        --len;
+
+    if (len == s.length() - 1)
+        return s;
+
+    return s.substr(0, len+1);
+}
+
 std::vector<std::string> TextScanner::Split(const std::string& input, const std::string& splitter)
 {
 	vector<string> output;

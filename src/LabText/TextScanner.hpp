@@ -109,7 +109,12 @@ namespace TextScanner
 	void testSplitter();
 #endif
 
-    inline uint64_t Hash(const char *buf, size_t len) {
+
+    std::string StripLeadingWhitespace(const std::string& s);
+    std::string StripTrailingWhitespace(const std::string& s);
+
+    inline uint64_t Hash(const char *buf, size_t len)
+    {
         uint64_t hash = 5381;
         while (len--)
             hash = ((hash << 5) + hash) + (*buf++); /* hash * 33 + c */

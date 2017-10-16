@@ -40,6 +40,8 @@ else()
     target_compile_definitions(LabText PUBLIC PLATFORM_LINUX=1)
 endif()
 
+set_target_properties(LabText PROPERTIES OUTPUT_NAME_DEBUG LabTextd)
+
 set_target_properties(LabText
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
