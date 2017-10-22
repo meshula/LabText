@@ -94,8 +94,18 @@ std::vector<std::string> TextScanner::SplitLines(const std::string& input)
 	std::stringstream stream(input);
 	std::string str;
 	if (stream)
+	{
 		while (std::getline(stream, str, '\r'))
-			output.push_back(str[0] == '\n'? str.substr(1) : str);
+			output.push_back(str[0] == '\n' ? str.substr(1) : str);
+		if (output.size() == 1)
+		{
+			// a file with no \r's needs to be parsed for \n's.
+			output.clear();
+			std::stringstream stream2(input);
+			while (std::getline(stream2, str, '\n'))
+				output.push_back(str);
+		}
+	}
 	return output;
 }
 
