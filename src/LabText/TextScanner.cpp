@@ -10,7 +10,7 @@ while using this code.
 #include "TextScanner.h"
 #include "TextScanner.hpp"
 
-#define TEXTSCANNER_IMPL
+#define IMPL_TEXTSCANNER
 #include "TextScannerTime.hpp"
 
 #ifdef PLATFORM_WINDOWS
