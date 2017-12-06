@@ -10,6 +10,9 @@ while using this code.
 #include "TextScanner.h"
 #include "TextScanner.hpp"
 
+#define TEXTSCANNER_IMPL
+#include "TextScannerTime.hpp"
+
 #ifdef PLATFORM_WINDOWS
 #include <windows.h>    // for unicode conversions
 #endif

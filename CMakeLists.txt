@@ -72,6 +72,7 @@ install(
     FILES
         src/LabText/TextScanner.h
         src/LabText/TextScanner.hpp
+        src/LabText/TextScannerTime.hpp
 
     DESTINATION
         include/LabText)
