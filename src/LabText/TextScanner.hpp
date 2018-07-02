@@ -30,9 +30,9 @@ namespace TextScanner
     std::string					Join(const std::vector<std::string>& input, const std::string& join);
 
 	// Simple Tests
-	template <class Type> inline bool IsWhiteSpace(Type test)	{ return (test == 9 || test == ' ' || test == 13 || test == 10);	}
-	template <class Type> inline bool IsNumeric(Type test)		{ return (test >= '0' && test <= '9');	}
-	template <class Type> inline bool IsAlpha(Type test)		{ return ((test >= 'a' && test <= 'z') || (test >= 'A' && test <= 'Z'));	}
+	template <typename Type> inline bool IsWhiteSpace(Type test)	{ return (test == 9 || test == ' ' || test == 13 || test == 10);	}
+	template <typename Type> inline bool IsNumeric(Type test)		{ return (test >= '0' && test <= '9');	}
+	template <typename Type> inline bool IsAlpha(Type test)		{ return ((test >= 'a' && test <= 'z') || (test >= 'A' && test <= 'Z'));	}
 
 	// a zillion times faster than Split.
 	// This template, given a string, creates an array caching the split parts of the string

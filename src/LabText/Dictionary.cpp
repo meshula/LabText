@@ -12,7 +12,7 @@
 
 static unsigned int _dictStringCopyHTHashFunction(const void *key)
 {
-    return dictGenHashFunction((const unsigned char*) key, strlen((const char*) key));
+    return dictGenHashFunction((const unsigned char*) key, (int) strlen((const char*) key));
 }
 
 static void *_dictStringDup(void *privdata, const void *key)
