@@ -19,11 +19,11 @@ while using this code.
 
 char const* tsScanForQuote(
     char const* pCurr, char const* pEnd,
-    char delim, 
+    char delim,
 	bool recognizeEscapes)
 {
 	Assert(pCurr && pEnd && pEnd >= pCurr);
-	
+
 	while (pCurr < pEnd) {
 		if (*pCurr == '\\' && recognizeEscapes)	// not handling multicharacter escapes such as \u23AB
 			++pCurr;
@@ -39,7 +39,7 @@ char const* tsScanForWhiteSpace(
 	char const* pCurr, char const* pEnd)
 {
 	Assert(pCurr && pEnd && pEnd >= pCurr);
-	
+
 	while (pCurr < pEnd && !tsIsWhiteSpace(*pCurr))
 		++pCurr;
 
@@ -50,7 +50,7 @@ char const* tsScanForNonWhiteSpace(
    char const* pCurr, char const* pEnd)
 {
 	Assert(pCurr && pEnd && pEnd >= pCurr);
-	
+
 	while (pCurr < pEnd && tsIsWhiteSpace(*pCurr))
 		++pCurr;
 
@@ -61,7 +61,7 @@ char const* tsScanBackwardsForWhiteSpace(
 	char const* pCurr, char const* pStart)
 {
 	Assert(pCurr && pStart && pStart <= pCurr);
-	
+
 	while (pCurr >= pStart && !tsIsWhiteSpace(*pCurr))
 		--pCurr;
 
@@ -72,7 +72,7 @@ char const* tsScanForTrailingNonWhiteSpace(
 	char const* pCurr, char const* pEnd)
 {
 	Assert(pCurr && pEnd && pEnd >= pCurr);
-	
+
 	while (pCurr < pEnd && tsIsWhiteSpace(*pEnd))
 		--pEnd;
 
@@ -80,7 +80,7 @@ char const* tsScanForTrailingNonWhiteSpace(
 }
 
 char const* tsScanForCharacter(
-	char const* pCurr, char const* pEnd, 
+	char const* pCurr, char const* pEnd,
 	char delim)
 {
 	Assert(pCurr && pEnd);
@@ -92,11 +92,11 @@ char const* tsScanForCharacter(
 }
 
 char const* tsScanBackwardsForCharacter(
-	char const* pCurr, char const* pStart, 
+	char const* pCurr, char const* pStart,
 	char delim)
 {
 	Assert(pCurr && pStart && pStart <= pCurr);
-	
+
 	while (pCurr >= pStart && *pCurr != delim)
 		--pCurr;
 
@@ -169,12 +169,12 @@ char const* tsScanPastCPPComments(
 					pCurr = &pCurr[2];
 					break;
 				}
-				
+
 				++pCurr;
 			}
 		}
 	}
-	
+
 	return pCurr;
 }
 
@@ -186,31 +186,31 @@ char const* tsSkipCommentsAndWhitespace(
 	{
 		char const* past = tsScanForNonWhiteSpace(curr, end);
 		curr = past;
-		
+
 		past = tsScanPastCPPComments(curr, end);
 		moved = past != curr;
 		curr = past;
 	}
-	
+
 	return tsScanForNonWhiteSpace(curr, end);
 }
 
 char const* tsGetToken(
-	char const* pCurr, char const* pEnd, 
-	char delim, 
+	char const* pCurr, char const* pEnd,
+	char delim,
 	char const** resultStringBegin, uint32_t* stringLength)
 {
 	Assert(pCurr && pEnd);
-	
+
 	pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
-	*resultStringBegin = pCurr;	
-	char const* pStringEnd = tsScanForCharacter(pCurr, pEnd, delim);	
+	*resultStringBegin = pCurr;
+	char const* pStringEnd = tsScanForCharacter(pCurr, pEnd, delim);
 	*stringLength = (uint32_t)(pStringEnd - *resultStringBegin);
 	return pStringEnd;
 }
 
 char const* tsGetTokenWSDelimited(
-	char const* pCurr, char const* pEnd, 
+	char const* pCurr, char const* pEnd,
 	char const** resultStringBegin, uint32_t* stringLength)
 {
 	pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
@@ -221,121 +221,121 @@ char const* tsGetTokenWSDelimited(
 }
 
 char const* tsGetTokenAlphaNumeric(
-	char const* pCurr, char const* pEnd, 
+	char const* pCurr, char const* pEnd,
 	char const** resultStringBegin, uint32_t* stringLength)
 {
 	Assert(pCurr && pEnd);
-	
+
 	pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
 	*resultStringBegin = pCurr;
 	*stringLength = 0;
-	
+
 	while (pCurr < pEnd)
 	{
 		char test = pCurr[0];
-		
+
 		if (tsIsWhiteSpace(test))
 			break;
-		
+
 		_Bool accept = ((test == '_') || tsIsNumeric(test) || tsIsAlpha(test));
-		
+
 		if (!accept)
 			break;
-		
+
 		++pCurr;
 		*stringLength += 1;
 	}
-	
+
 	return pCurr;
 }
 
 char const* tsGetNameSpacedTokenAlphaNumeric(
-	char const* pCurr, char const* pEnd, 
-	char namespaceChar, 
+	char const* pCurr, char const* pEnd,
+	char namespaceChar,
 	char const** resultStringBegin, uint32_t* stringLength)
 {
 	Assert(pCurr && pEnd);
-	
+
 	pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
 	*resultStringBegin = pCurr;
 	*stringLength = 0;
-	
+
 	while (pCurr < pEnd)
 	{
 		char test = pCurr[0];
-		
+
 		if (tsIsWhiteSpace(test))
 			break;
-		
+
         // should pass in a string of acceptable characters, ie "$^_"
 		_Bool accept = ((test == namespaceChar) || (test == '$') || (test == '^') || (test == '_') || tsIsNumeric(test) || tsIsAlpha(test));
-		
+
 		if (!accept)
 			break;
-		
+
 		++pCurr;
 		*stringLength += 1;
 	}
-	
+
 	return pCurr;
 }
 
 char const* tsGetString(
-	char const* pCurr, char const* pEnd, 
+	char const* pCurr, char const* pEnd,
 	bool recognizeEscapes,
 	char const** resultStringBegin, uint32_t* stringLength)
 {
 	Assert(pCurr && pEnd && pEnd >= pCurr);
-	
+
 	pCurr = tsScanForQuote(pCurr, pEnd, '\"', recognizeEscapes);
-	
+
 	if (pCurr < pEnd)
 	{
 		++pCurr;	// skip past quote
 		*resultStringBegin = pCurr;
-		
+
 		pCurr = tsScanForQuote(pCurr, pEnd, '\"', recognizeEscapes);
-		
+
 		if (pCurr <= pEnd)
 			*stringLength = (uint32_t)(pCurr - *resultStringBegin);
 		else
 			*stringLength = 0;
-		
+
 		++pCurr;	// point past closing quote
 	}
 	else
 		*stringLength = 0;
-	
+
 	return pCurr;
 }
 
 char const* tsGetString2(
-                        char const* pCurr, char const* pEnd, 
+                        char const* pCurr, char const* pEnd,
                         char delim,
                         bool recognizeEscapes,
                         char const** resultStringBegin, uint32_t* stringLength)
 {
 	Assert(pCurr && pEnd && pEnd >= pCurr);
-	
+
 	pCurr = tsScanForQuote(pCurr, pEnd, delim, recognizeEscapes);
-	
+
 	if (pCurr < pEnd)
 	{
 		++pCurr;	// skip past quote
 		*resultStringBegin = pCurr;
-		
+
 		pCurr = tsScanForQuote(pCurr, pEnd, delim, recognizeEscapes);
-		
+
 		if (pCurr <= pEnd)
 			*stringLength = (uint32_t)(pCurr - *resultStringBegin);
 		else
 			*stringLength = 0;
-		
+
 		++pCurr;	// point past closing quote
 	}
 	else
 		*stringLength = 0;
-	
+
 	return pCurr;
 }
 
@@ -343,7 +343,7 @@ char const* tsGetString2(
 // to the character that follows, otherwise return the start of the input stream
 
 char const* tsExpect(
-    char const* pCurr, char const*const pEnd, 
+    char const* pCurr, char const*const pEnd,
 	char const* pExpect)
 {
 	char const* pScan = pCurr;
@@ -357,7 +357,7 @@ char const* tsExpect(
 
 
 char const* tsGetInt16(
-	char const* pCurr, char const* pEnd, 
+	char const* pCurr, char const* pEnd,
 	int16_t* result)
 {
 	int32_t longresult;
@@ -367,15 +367,15 @@ char const* tsGetInt16(
 }
 
 char const* tsGetInt32(
-	char const* pCurr, char const* pEnd, 
+	char const* pCurr, char const* pEnd,
 	int32_t* result)
 {
 	pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
-	
+
 	int ret = 0;
-	
+
 	_Bool signFlip = false;
-	
+
 	if (*pCurr == '+')
 	{
 		++pCurr;
@@ -385,7 +385,7 @@ char const* tsGetInt32(
 		++pCurr;
 		signFlip = true;
 	}
-	
+
 	while (pCurr < pEnd)
 	{
 		if (!tsIsNumeric(*pCurr))
@@ -395,7 +395,7 @@ char const* tsGetInt32(
 		ret = ret * 10 + *pCurr - '0';
 		++pCurr;
 	}
-	
+
 	if (signFlip)
 	{
 		ret = -ret;
@@ -405,13 +405,13 @@ char const* tsGetInt32(
 }
 
 char const* tsGetUInt32(
-	char const* pCurr, char const* pEnd, 
+	char const* pCurr, char const* pEnd,
 	uint32_t* result)
 {
 	pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
-	
+
 	uint32_t ret = 0;
-	
+
 	while (pCurr < pEnd)
 	{
 		if (!tsIsNumeric(*pCurr))
@@ -426,15 +426,15 @@ char const* tsGetUInt32(
 }
 
 char const* tsGetFloat(
-	char const* pCurr, char const* pEnd, 
+	char const* pCurr, char const* pEnd,
 	float* result)
 {
 	pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
-	
+
 	float ret = 0.0f;
-	
+
 	_Bool signFlip = false;
-	
+
 	if (*pCurr == '+')
 	{
 		++pCurr;
@@ -444,17 +444,17 @@ char const* tsGetFloat(
 		++pCurr;
 		signFlip = true;
 	}
-	
+
 	// get integer part
 	int32_t intPart;
 	pCurr = tsGetInt32(pCurr, pEnd, &intPart);
 	ret = (float) intPart;
-	
+
 	// get fractional part
 	if (*pCurr == '.')
 	{
 		++pCurr;
-		
+
 		float scaler = 0.1f;
 		while (pCurr < pEnd)
 		{
@@ -467,16 +467,16 @@ char const* tsGetFloat(
 			scaler *= 0.1f;
 		}
 	}
-	
+
 	// get exponent
 	if (*pCurr == 'e' || *pCurr == 'E')
 	{
 		++pCurr;
-		
+
 		pCurr = tsGetInt32(pCurr, pEnd, &intPart);
 		ret *= powf(10.0f, (float) intPart);
 	}
-	
+
 	if (signFlip)
 	{
 		ret = -ret;
@@ -487,13 +487,13 @@ char const* tsGetFloat(
 
 
 char const* tsGetHex(
-	char const* pCurr, char const* pEnd, 
+	char const* pCurr, char const* pEnd,
 	uint32_t* result)
 {
 	pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
-	
+
 	int ret = 0;
-	
+
 	while (pCurr < pEnd)
 	{
 		if (tsIsNumeric(*pCurr))
@@ -514,31 +514,31 @@ char const* tsGetHex(
 		}
 		++pCurr;
 	}
-	
+
 	*result = ret;
 	return pCurr;
 }
 
-_Bool tsIsIn(const char* testString, char test)			
-{ 
-	for (; *testString != '\0'; ++testString) 
-		if (*testString == test) 
-			return true; 
-	return false; 
+_Bool tsIsIn(const char* testString, char test)
+{
+	for (; *testString != '\0'; ++testString)
+		if (*testString == test)
+			return true;
+	return false;
 }
 
-_Bool tsIsWhiteSpace(char test)	
-{ 
-	return (test == 9 || test == ' ' || test == 13 || test == 10);	
+_Bool tsIsWhiteSpace(char test)
+{
+	return (test == 9 || test == ' ' || test == 13 || test == 10);
 }
 
-_Bool tsIsNumeric(char test)	
-{ 
-	return (test >= '0' && test <= '9');	
+_Bool tsIsNumeric(char test)
+{
+	return (test >= '0' && test <= '9');
 }
 
-_Bool tsIsAlpha(char test)		
-{ 
-	return ((test >= 'a' && test <= 'z') || (test >= 'A' && test <= 'Z'));	
+_Bool tsIsAlpha(char test)
+{
+	return ((test >= 'a' && test <= 'z') || (test >= 'A' && test <= 'Z'));
 }
 

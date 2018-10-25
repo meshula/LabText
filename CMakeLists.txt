@@ -13,7 +13,7 @@ include(Utilities)
 
 lab_library(LabText
     TYPE STATIC
-    ALIAS LabText::Core
+    ALIAS Lab::Text
 
     LIBRARIES
 
