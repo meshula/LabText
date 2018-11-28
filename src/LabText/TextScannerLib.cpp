@@ -220,6 +220,39 @@ char const* tsGetTokenWSDelimited(
 	return pStringEnd;
 }
 
+char const* tsGetTokenAlphaNumericExt(
+	char const* pCurr, char const* pEnd,
+    char const* ext_,
+	char const** resultStringBegin, uint32_t* stringLength)
+{
+	Assert(pCurr && pEnd);
+
+	pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
+	*resultStringBegin = pCurr;
+	*stringLength = 0;
+
+	while (pCurr < pEnd)
+	{
+		char test = pCurr[0];
+
+		if (tsIsWhiteSpace(test))
+			break;
+
+		_Bool accept = tsIsNumeric(test) || tsIsAlpha(test);
+        char const* ext = ext_;
+        for ( ; *ext && !accept; ++ext)
+            accept |= *ext == test;
+
+		if (!accept)
+			break;
+
+		++pCurr;
+		*stringLength += 1;
+	}
+
+	return pCurr;
+}
+
 char const* tsGetTokenAlphaNumeric(
 	char const* pCurr, char const* pEnd,
 	char const** resultStringBegin, uint32_t* stringLength)

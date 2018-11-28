@@ -52,6 +52,8 @@ The types referenced are compatible with the C99 stdint.h types.
 EXTERNC char const* tsGetToken						(char const* pCurr, char const* pEnd, char delim, char const** resultStringBegin, uint32_t* stringLength);
 EXTERNC char const* tsGetTokenWSDelimited			(char const* pCurr, char const* pEnd, char const** resultStringBegin, uint32_t* stringLength);
 EXTERNC char const* tsGetTokenAlphaNumeric			(char const* pCurr, char const* pEnd, char const** resultStringBegin, uint32_t* stringLength);
+EXTERNC char const* tsGetTokenAlphaNumericExt       (char const* pCurr, char const* pEnd, char const* ext, char const** resultStringBegin, uint32_t* stringLength);
+
 EXTERNC char const* tsGetNameSpacedTokenAlphaNumeric(char const* pCurr, char const* pEnd, char namespaceChar, char const** resultStringBegin, uint32_t* stringLength);
 
 // Get Value
@@ -102,6 +104,10 @@ namespace lab
             {
                 return sz == rhs.sz && !strncmp(curr, rhs.curr, sz);
             }
+            bool operator!=(StrView const& rhs) const
+            {
+                return !(*this == rhs);
+            }
         };
 
         inline StrView GetToken(StrView s, char delim, StrView& result)
@@ -120,10 +126,18 @@ namespace lab
             return { next, static_cast<size_t>(s.curr + s.sz - next) };
         }
 
-        inline StrView GetTokenAlphaNumeric(StrView s, char delim, StrView& result)
+        inline StrView GetTokenAlphaNumeric(StrView s, StrView& result)
         {
             uint32_t sz;
             char const* next = tsGetTokenAlphaNumeric(s.curr, s.curr + s.sz, &result.curr, &sz);
+            result.sz = sz;
+            return { next, static_cast<size_t>(s.curr + s.sz - next) };
+        }
+
+        inline StrView GetTokenAlphaNumericExt (StrView s, char const* ext, StrView& result)
+        {
+            uint32_t sz;
+            char const* next = tsGetTokenAlphaNumericExt(s.curr, s.curr + s.sz, ext, &result.curr, &sz);
             result.sz = sz;
             return { next, static_cast<size_t>(s.curr + s.sz - next) };
         }

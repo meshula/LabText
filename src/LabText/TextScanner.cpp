@@ -336,16 +336,24 @@ std::vector<StrView> lab::Text::Split(StrView s, char splitter)
     while (remaining > 0)
     {
         if (*src != splitter)
+        {
             ++sz;
+            ++src;
+        }
         else
         {
             result.emplace_back(StrView{curr, sz});
             sz = 0;
-            curr = src + 1;
+            ++src;
+            curr = src;
         }
-        ++curr;
         --remaining;
     }
+
+    // capture last crumb
+    if (sz > 0)
+        result.emplace_back(StrView{curr, sz});
+
     return result;
 }
 
