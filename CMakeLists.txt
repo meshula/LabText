@@ -18,19 +18,19 @@ lab_library(LabText
     LIBRARIES
 
     INCLUDE_DIRS
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 
     PUBLIC_HEADERS
-        src/LabText/TextScanner.h
-        src/LabText/TextScanner.hpp
-        src/LabText/TextScannerTime.hpp
+        include/LabText/LabText.h
 
     PRIVATE_HEADERS
+        src/LabText/TextScanner.hpp
+        src/LabText/TextScannerTime.hpp
         src/LabText/config.h
         src/LabText/dict.h
         src/LabText/Dictionary.h
         src/LabText/ftoa.h
-        src/LabText/zmalloc.h
 
     CPPFILES
         src/LabText/dict.cpp
@@ -38,7 +38,6 @@ lab_library(LabText
         src/LabText/ftoa.cpp
         src/LabText/TextScanner.cpp
         src/LabText/TextScannerLib.cpp
-        src/LabText/zmalloc.cpp
 )
 
 IF(WIN32)

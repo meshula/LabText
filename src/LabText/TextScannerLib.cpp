@@ -7,7 +7,7 @@ or implied. Use at your own risk. Do not operate heavy machinery or governments
 while using this code.
 */
 
-#include "TextScanner.h"
+#include "LabText/LabText.h"
 #include <math.h>
 #include <stdbool.h>
 

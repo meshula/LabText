@@ -17,7 +17,7 @@ static unsigned int _dictStringCopyHTHashFunction(const void *key)
 
 static void *_dictStringDup(void *privdata, const void *key)
 {
-    int len = strlen((const char*) key);
+    size_t len = strlen((const char*) key);
     char *copy = (char*) malloc(len+1);
     DICT_NOTUSED(privdata);
 
