@@ -325,40 +325,6 @@ std::wstring TextScanner::Unicode(const std::string& input)
 	return L"";
 }
 
-using lab::Text::StrView;
-std::vector<StrView> lab::Text::Split(StrView s, char splitter)
-{
-    std::vector<StrView> result;
-    char const* src = s.curr;
-    char const* curr = src;
-    size_t remaining = s.sz;
-    size_t sz = 0;
-    while (remaining > 0)
-    {
-        if (*src != splitter)
-        {
-            ++sz;
-            ++src;
-        }
-        else
-        {
-            result.emplace_back(StrView{curr, sz});
-            sz = 0;
-            ++src;
-            curr = src;
-        }
-        --remaining;
-    }
-
-    // capture last crumb
-    if (sz > 0)
-        result.emplace_back(StrView{curr, sz});
-
-    return result;
-}
-
-
-
 std::string TextScanner::UTF8(const std::wstring& input)
 {
 #ifdef PLATFORM_WINDOWS

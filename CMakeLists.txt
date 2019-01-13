@@ -37,7 +37,7 @@ lab_library(LabText
         src/LabText/Dictionary.cpp
         src/LabText/ftoa.cpp
         src/LabText/TextScanner.cpp
-        src/LabText/TextScannerLib.cpp
+        src/LabText/LabTextODR.cpp
 )
 
 IF(WIN32)
