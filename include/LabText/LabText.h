@@ -107,7 +107,7 @@ struct StrView
 
 inline bool IsEmpty(StrView const& s)
 {
-    return s.sz > 0 && !!s.curr;
+    return (s.curr == nullptr) || (s.sz == 0);
 }
 
 inline StrView GetToken(StrView s, char delim, StrView& result)
@@ -688,8 +688,6 @@ char const* tsExpect(
     return (*pExpect == '\0' ? pScan : pCurr);
 }
 
-
-
 char const* tsGetInt16(
     char const* pCurr, char const* pEnd,
     int16_t* result)
@@ -819,7 +817,6 @@ char const* tsGetFloat(
     return pCurr;
 }
 
-
 char const* tsGetHex(
     char const* pCurr, char const* pEnd,
     uint32_t* result)
@@ -875,6 +872,7 @@ _Bool tsIsAlpha(char test)
 {
     return ((test >= 'a' && test <= 'z') || (test >= 'A' && test <= 'Z'));
 }
+
 
 namespace lab { namespace Text {
 std::vector<StrView> Split(StrView s, char splitter)
