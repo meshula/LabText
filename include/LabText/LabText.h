@@ -46,11 +46,13 @@ License BSD-2 Clause.
     #endif
 #endif
 
+
 // Get Token
 EXTERNC char const* tsGetToken                      (char const* pCurr, char const* pEnd, char delim, char const** resultStringBegin, uint32_t* stringLength);
 EXTERNC char const* tsGetTokenWSDelimited           (char const* pCurr, char const* pEnd, char const** resultStringBegin, uint32_t* stringLength);
 EXTERNC char const* tsGetTokenAlphaNumeric          (char const* pCurr, char const* pEnd, char const** resultStringBegin, uint32_t* stringLength);
 EXTERNC char const* tsGetTokenAlphaNumericExt       (char const* pCurr, char const* pEnd, char const* ext, char const** resultStringBegin, uint32_t* stringLength);
+EXTERNC char const* tsGetTokenExt                   (char const* pCurr, char const* pEnd, char const* ext, char const** resultStringBegin, uint32_t* stringLength);
 
 EXTERNC char const* tsGetNameSpacedTokenAlphaNumeric(char const* pCurr, char const* pEnd, char namespaceChar, char const** resultStringBegin, uint32_t* stringLength);
 
@@ -103,6 +105,17 @@ struct StrView
     {
         return !(*this == rhs);
     }
+    bool operator==(const char* rhs) const
+    {
+        if (!rhs)
+            return false;
+
+        return strlen(rhs) == sz && !strncmp(rhs, curr, sz);
+    }
+    bool operator<(StrView const& rhs)
+    {
+        return strncmp(curr, rhs.curr, sz<rhs.sz?sz:rhs.sz) < 0;
+    }
 };
 
 inline bool IsEmpty(StrView const& s)
@@ -138,6 +151,14 @@ inline StrView GetTokenAlphaNumericExt (StrView s, char const* ext, StrView& res
 {
     uint32_t sz;
     char const* next = tsGetTokenAlphaNumericExt(s.curr, s.curr + s.sz, ext, &result.curr, &sz);
+    result.sz = sz;
+    return { next, static_cast<size_t>(s.curr + s.sz - next) };
+}
+
+inline StrView GetTokenExt(StrView s, char const* ext, StrView& result)
+{
+    uint32_t sz;
+    char const* next = tsGetTokenExt(s.curr, s.curr + s.sz, ext, &result.curr, &sz);
     result.sz = sz;
     return { next, static_cast<size_t>(s.curr + s.sz - next) };
 }
@@ -542,6 +563,39 @@ char const* tsGetTokenAlphaNumericExt(
         _Bool accept = tsIsNumeric(test) || tsIsAlpha(test);
         char const* ext = ext_;
         for ( ; *ext && !accept; ++ext)
+            accept |= *ext == test;
+
+        if (!accept)
+            break;
+
+        ++pCurr;
+        *stringLength += 1;
+    }
+
+    return pCurr;
+}
+
+char const* tsGetTokenExt(
+    char const* pCurr, char const* pEnd,
+    char const* ext_,
+    char const** resultStringBegin, uint32_t* stringLength)
+{
+    Assert(pCurr && pEnd);
+
+    pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
+    *resultStringBegin = pCurr;
+    *stringLength = 0;
+
+    while (pCurr < pEnd)
+    {
+        char test = pCurr[0];
+
+        if (tsIsWhiteSpace(test))
+            break;
+
+        _Bool accept = false;
+        char const* ext = ext_;
+        for (; *ext && !accept; ++ext)
             accept |= *ext == test;
 
         if (!accept)
