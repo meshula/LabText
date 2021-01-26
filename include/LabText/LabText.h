@@ -85,8 +85,6 @@ EXTERNC _Bool tsIsNumeric   (char test);
 EXTERNC _Bool tsIsAlpha     (char test);
 EXTERNC _Bool tsIsIn        (const char* testString, char test);
 
-#undef EXTERNC
-
 #ifdef __cplusplus
 
 #include <vector>

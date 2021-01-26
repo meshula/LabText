@@ -7,7 +7,7 @@
 //
 
 #pragma once
-#include "LabText/dict.h"
+#include "dict.h"
 #include <string.h>
 #include <string>
 
