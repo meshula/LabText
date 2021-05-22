@@ -1,6 +1,5 @@
 
-LabText.h is now a single file text parsing utility. There are some legacy files
-in LabText, which are all slated for demolition.
+LabText.h is now a single file text parsing utility.
 
 To use LabText.h, include it in your project, and include it at once defining
 LABTEXT_ODR to cause the functions to be compiled into your program.
