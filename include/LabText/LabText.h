@@ -46,6 +46,11 @@ License BSD-2 Clause.
     #endif
 #endif
 
+#ifdef __cplusplus
+    #include <string>
+    #include <vector>
+#endif
+
 
 // Get Token
 EXTERNC char const* tsGetToken                      (char const* pCurr, char const* pEnd, char delim, char const** resultStringBegin, uint32_t* stringLength);
@@ -339,85 +344,96 @@ struct Sexpr {
 
 private:
     StrView Parse(StrView s) {
+        StrView curr = s;
         while (true) {
-            StrView curr = ScanForNonWhiteSpace(s);
+            curr = ScanForNonWhiteSpace(s);
             if (curr.sz == 0)
                 return curr; // parsing finished
             if (curr.sz == ';') {
                 curr = ScanForBeginningOfNextLine(curr); // LISP comment
                 continue;
-            if (*curr.next != '(') {
+            }
+            if (*curr.curr != '(') {
+                curr.sz = 0; // stop parsing
                 return curr; // error
             }
             break;
         }
         ++balance;
-        expr.emplace({PushList, 0});
+        expr.push_back({ PushList, 0 });
 
-        curr.next++;
+        curr.curr++;
         curr.sz--;
+        curr = ScanForNonWhiteSpace(curr);
         if (curr.sz == 0)
             return curr;
 
         while (true) {
-            if (*curr.next == ';') {
+            if (*curr.curr == ';') {
                 curr = ScanForNonWhiteSpace(ScanForBeginningOfNextLine(curr));
                 continue;
             }
-            if (*curr.next == '"') {
+            if (*curr.curr == '"') {
                 StrView str;
                 curr = ScanForNonWhiteSpace(GetString(curr, true, str));
-                expr.emplace({String, strings.size()});
-                strings.emplace(std::string(std::string(str.next, str.sz));
+                expr.push_back({ String, (int)strings.size() });
+                strings.push_back(std::string(str.curr, str.sz));
                 if (curr.sz == 0)
                     return curr;
                 continue;
             }
-            if (*curr.next == ')') {
+            if (*curr.curr == ')') {
                 --balance;
-                expr.emplace({PopList, 0});
+                expr.push_back({ PopList, 0 });
                 return curr;
             }
-            if (*curr.enxt == '(') {
-               return Parse(curr);
+            if (*curr.curr == '(') {
+                return Parse(curr);
             }
 
             StrView token = curr;
+            token.sz = 0;
             while (curr.sz > 0) {
-                if (*curr.next == '"')
+                if (*curr.curr == '"')
                     break;
-                if (*curr.next == '(')
+                if (*curr.curr == '(')
                     break;
-                if (*curr.next == ')')
+                if (*curr.curr == ')')
                     break;
-                if (tsIsWhiteSpace(*curr.next))
+                if (tsIsWhiteSpace(*curr.curr))
                     break;
-                if (*curr.next == ';') {
-                    curr = ScanForNonWhiteSpace(ScanForBeginningOfNextLine(curr));
+                if (*curr.curr == ';')
                     break;
-                }
                 token.sz++;
-                curr.next++;
+                curr.curr++;
                 curr.sz--;
             }
+            if (!token.sz)
+                continue;
 
-            int i;
-            StrView test = GetInt32(token, &i);
-            if (test.sz == 0) {
-                expr.emplace_back({Int, ints.size()});
-                ints.emplace(i);
+            int32_t i;
+            StrView test = GetInt32(token, i);
+            if (test.curr != token.curr) {
+                expr.push_back({ Integer, (int)ints.size() });
+                ints.push_back(i);
+                curr.curr = test.curr;
+                curr.sz -= test.sz;
             }
             else {
-                test = GetFloat(token, &f);
-                if (test.sz == 0) {
-                    expr.emplace_back({Float, floats.size()});
-                    floats.empalce(f);
+                float f;
+                test = GetFloat(token, f);
+                if (test.curr != token.curr) {
+                    expr.push_back({ Float, (int)floats.size() });
+                    floats.push_back(f);
+                    curr.curr = test.curr;
+                    curr.sz -= test.sz;
                 }
                 else {
-                    expr.emplace_back({Atom, strings.size()});
-                    strings.emplace(std::string(test.next, test.sz));
+                    expr.push_back({ Atom, (int)strings.size() });
+                    strings.push_back(std::string(token.curr, token.sz));
                 }
             }
+            curr = ScanForNonWhiteSpace(curr);
         }
     }
 };
@@ -863,6 +879,9 @@ char const* tsGetInt32(
     char const* pCurr, char const* pEnd,
     int32_t* result)
 {
+    char const* start = pCurr;
+
+    _Bool foundNumeric = false;
     pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
 
     int ret = 0;
@@ -885,9 +904,13 @@ char const* tsGetInt32(
         {
             break;
         }
+        foundNumeric = true;
         ret = ret * 10 + *pCurr - '0';
         ++pCurr;
     }
+
+    if (!foundNumeric)
+        return start;
 
     if (signFlip)
     {
@@ -901,9 +924,11 @@ char const* tsGetUInt32(
     char const* pCurr, char const* pEnd,
     uint32_t* result)
 {
+    char const* start = pCurr;
     pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
 
     uint32_t ret = 0;
+    _Bool foundNumeric = false;
 
     while (pCurr < pEnd)
     {
@@ -911,9 +936,14 @@ char const* tsGetUInt32(
         {
             break;
         }
+        foundNumeric = true;
         ret = ret * 10 + *pCurr - '0';
         ++pCurr;
     }
+
+    if (!foundNumeric)
+        return start;
+
     *result = ret;
     return pCurr;
 }
@@ -922,11 +952,13 @@ char const* tsGetFloat(
     char const* pCurr, char const* pEnd,
     float* result)
 {
+    char const* start = pCurr;
     pCurr = tsScanForNonWhiteSpace(pCurr, pEnd);
 
     float ret = 0.0f;
 
     _Bool signFlip = false;
+    _Bool foundNumeric = false;
 
     if (*pCurr == '+')
     {
@@ -939,26 +971,31 @@ char const* tsGetFloat(
     }
 
     // get integer part
-    int32_t intPart;
-    pCurr = tsGetInt32(pCurr, pEnd, &intPart);
-    ret = (float) intPart;
+    uint32_t uintPart;
+    const char* test = tsGetUInt32(pCurr, pEnd, &uintPart);
+    if (test == pCurr)
+        return start;
+    pCurr = test;
+
+    ret = (float) uintPart;
 
     // get fractional part
-    if (*pCurr == '.')
-    {
-        ++pCurr;
+    if (*pCurr != '.')
+        return start;   // no decimal, not a float
 
-        float scaler = 0.1f;
-        while (pCurr < pEnd)
+    ++pCurr;
+
+    float scaler = 0.1f;
+    while (pCurr < pEnd)
+    {
+        if (!tsIsNumeric(*pCurr))
         {
-            if (!tsIsNumeric(*pCurr))
-            {
-                break;
-            }
-            ret = ret + (float)(*pCurr - '0') * scaler;
-            ++pCurr;
-            scaler *= 0.1f;
+            break;
         }
+        foundNumeric = true;
+        ret = ret + (float)(*pCurr - '0') * scaler;
+        ++pCurr;
+        scaler *= 0.1f;
     }
 
     // get exponent
@@ -966,7 +1003,12 @@ char const* tsGetFloat(
     {
         ++pCurr;
 
-        pCurr = tsGetInt32(pCurr, pEnd, &intPart);
+        int32_t intPart = 0;
+        test = tsGetInt32(pCurr, pEnd, &intPart);
+
+        if (pCurr == test)
+            return start;   // e without a number following it is malformed
+
         ret *= powf(10.0f, (float) intPart);
     }
 
@@ -1052,7 +1094,7 @@ std::vector<StrView> Split(StrView s, char splitter)
         }
         else
         {
-            result.emplace_back(StrView{curr, sz});
+            result.push_back(StrView{curr, sz});
             sz = 0;
             ++src;
             curr = src;
@@ -1062,11 +1104,11 @@ std::vector<StrView> Split(StrView s, char splitter)
 
     // capture last crumb
     if (sz > 0)
-        result.emplace_back(StrView{curr, sz});
+        result.push_back(StrView{curr, sz});
 
     return result;
 }
 }} // lab::Text
 
-#endif LABTEXT_ODR
+#endif // LABTEXT_ODR
 
