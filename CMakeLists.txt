@@ -1,7 +1,7 @@
 
 include_guard()
 
-cmake_minimum_required (VERSION 3.11)
+cmake_minimum_required (VERSION 3.19)
 project(LabText C CXX)
 
 set(LABTEXT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
@@ -35,4 +35,7 @@ install(FILES
   "${PROJECT_BINARY_DIR}/LabTextConfig.cmake"
   DESTINATION "${CMAKE_INSTALL_PREFIX}"
 )
+
+add_executable(TestSexpr TestSexpr.cpp)
+target_link_libraries(TestSexpr Lab::Text)
 
