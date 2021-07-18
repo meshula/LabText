@@ -87,6 +87,7 @@ EXTERNC _Bool tsIsIn        (const char* testString, char test);
 
 #ifdef __cplusplus
 
+#include <string.h>
 #include <vector>
 
 namespace lab { namespace Text {
@@ -314,6 +315,114 @@ inline StrView Strip(StrView s)
 }
 
 std::vector<StrView> Split(StrView s, char split);
+
+
+struct Sexpr {
+
+    enum Token { PushList, PopList, Integer, Float, String, Atom };
+
+    struct Elem {
+        Token token;
+        int ref;
+    };
+
+    std::vector<Elem> expr;
+    std::vector<int> ints;
+    std::vector<float> floats;
+    std::vector<std::string> strings;
+
+    int balance = 0;
+
+    explicit Sexpr(StrView s) {
+        Parse(s);
+    }
+
+private:
+    StrView Parse(StrView s) {
+        while (true) {
+            StrView curr = ScanForNonWhiteSpace(s);
+            if (curr.sz == 0)
+                return curr; // parsing finished
+            if (curr.sz == ';') {
+                curr = ScanForBeginningOfNextLine(curr); // LISP comment
+                continue;
+            if (*curr.next != '(') {
+                return curr; // error
+            }
+            break;
+        }
+        ++balance;
+        expr.emplace({PushList, 0});
+
+        curr.next++;
+        curr.sz--;
+        if (curr.sz == 0)
+            return curr;
+
+        while (true) {
+            if (*curr.next == ';') {
+                curr = ScanForNonWhiteSpace(ScanForBeginningOfNextLine(curr));
+                continue;
+            }
+            if (*curr.next == '"') {
+                StrView str;
+                curr = ScanForNonWhiteSpace(GetString(curr, true, str));
+                expr.emplace({String, strings.size()});
+                strings.emplace(std::string(std::string(str.next, str.sz));
+                if (curr.sz == 0)
+                    return curr;
+                continue;
+            }
+            if (*curr.next == ')') {
+                --balance;
+                expr.emplace({PopList, 0});
+                return curr;
+            }
+            if (*curr.enxt == '(') {
+               return Parse(curr);
+            }
+
+            StrView token = curr;
+            while (curr.sz > 0) {
+                if (*curr.next == '"')
+                    break;
+                if (*curr.next == '(')
+                    break;
+                if (*curr.next == ')')
+                    break;
+                if (tsIsWhiteSpace(*curr.next))
+                    break;
+                if (*curr.next == ';') {
+                    curr = ScanForNonWhiteSpace(ScanForBeginningOfNextLine(curr));
+                    break;
+                }
+                token.sz++;
+                curr.next++;
+                curr.sz--;
+            }
+
+            int i;
+            StrView test = GetInt32(token, &i);
+            if (test.sz == 0) {
+                expr.emplace_back({Int, ints.size()});
+                ints.emplace(i);
+            }
+            else {
+                test = GetFloat(token, &f);
+                if (test.sz == 0) {
+                    expr.emplace_back({Float, floats.size()});
+                    floats.empalce(f);
+                }
+                else {
+                    expr.emplace_back({Atom, strings.size()});
+                    strings.emplace(std::string(test.next, test.sz));
+                }
+            }
+        }
+    }
+};
+
+
 
 }} // lab::Text
 
