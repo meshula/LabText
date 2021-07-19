@@ -3,13 +3,15 @@
 #include <stdio.h>
 
 char const* test = R"(
-(+ 1 (* 3 4)) )";
+(a '(b c))
+(+ 123.4 (* 30 45)) (elephant banana canary)
+(print "hello world")
+(hello-world)
+)";
 
 
 int main() {
     lab::Text::Sexpr s(lab::Text::StrView{test, strlen(test)});
-    printf("hello world\n");
-
     for (auto& e : s.expr) {
         switch (e.token) {
         case lab::Text::Sexpr::PushList: printf("("); break;

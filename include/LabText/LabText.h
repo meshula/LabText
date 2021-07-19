@@ -364,11 +364,12 @@ private:
 
         curr.curr++;
         curr.sz--;
-        curr = ScanForNonWhiteSpace(curr);
-        if (curr.sz == 0)
-            return curr;
 
         while (true) {
+            curr = ScanForNonWhiteSpace(curr);
+            if (curr.sz == 0)
+                return curr;
+
             if (*curr.curr == ';') {
                 curr = ScanForNonWhiteSpace(ScanForBeginningOfNextLine(curr));
                 continue;
@@ -385,10 +386,13 @@ private:
             if (*curr.curr == ')') {
                 --balance;
                 expr.push_back({ PopList, 0 });
-                return curr;
+                curr.curr++;
+                curr.sz--;
+                continue;
             }
             if (*curr.curr == '(') {
-                return Parse(curr);
+                curr = Parse(curr);
+                continue;
             }
 
             StrView token = curr;
@@ -411,20 +415,20 @@ private:
             if (!token.sz)
                 continue;
 
-            int32_t i;
-            StrView test = GetInt32(token, i);
+            float f;
+            StrView test = GetFloat(token, f);
             if (test.curr != token.curr) {
-                expr.push_back({ Integer, (int)ints.size() });
-                ints.push_back(i);
+                expr.push_back({ Float, (int)floats.size() });
+                floats.push_back(f);
                 curr.curr = test.curr;
                 curr.sz -= test.sz;
             }
             else {
-                float f;
-                test = GetFloat(token, f);
+                int32_t i;
+                StrView test = GetInt32(token, i);
                 if (test.curr != token.curr) {
-                    expr.push_back({ Float, (int)floats.size() });
-                    floats.push_back(f);
+                    expr.push_back({ Integer, (int)ints.size() });
+                    ints.push_back(i);
                     curr.curr = test.curr;
                     curr.sz -= test.sz;
                 }
