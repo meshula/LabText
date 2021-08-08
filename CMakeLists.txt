@@ -31,9 +31,15 @@ add_library(Lab::Text ALIAS LabText)
 
 configure_file(LabTextConfig.cmake.in "${PROJECT_BINARY_DIR}/LabTextConfig.cmake" @ONLY)
 
+install(TARGETS LabText
+    EXPORT LabText
+    LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+    RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/bin"
+    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include")
+
 install(FILES
-  "${PROJECT_BINARY_DIR}/LabTextConfig.cmake"
-  DESTINATION "${CMAKE_INSTALL_PREFIX}"
+  "${PROJECT_BINARY_DIR}/LabTextConfig.cmake" DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake"
 )
 
 add_executable(TestSexpr TestSexpr.cpp)
