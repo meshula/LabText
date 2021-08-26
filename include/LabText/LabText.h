@@ -90,6 +90,11 @@ EXTERNC _Bool tsIsNumeric   (char test);
 EXTERNC _Bool tsIsAlpha     (char test);
 EXTERNC _Bool tsIsIn        (const char* testString, char test);
 
+// These UTF conversions return length. If dst is nullptr, the routines can be used for measuring a conversion
+EXTERNC int32_t tsConvertUtf8ToUtf16(char16_t* dst, int32_t dst_size, const char* src);
+EXTERNC int32_t tsConvertUtf16ToUtf8(char* dst, int32_t dst_size, const char16_t* src);
+
+
 #ifdef __cplusplus
 
 #include <string.h>
@@ -463,6 +468,149 @@ private:
 //! @todo replace Assert with custom error reporting mechanism
 #include <assert.h>
 #define Assert assert
+
+
+/*
+* The two functions, tsConvertUtf16ToUtf8 and tsConvertUtf8ToUtf16 are
+* originally from the Effekseer library, and bear the following license:
+
+The MIT License (MIT)
+
+Copyright (c) 2011 Effekseer Project
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+*/
+
+/**
+    @brief    Convert UTF16 into UTF8
+    @param    dst    a pointer to destination buffer
+    @param    dst_size    a length of destination buffer
+    @param    src            a source buffer
+    @return    length except 0
+*/
+int32_t tsConvertUtf16ToUtf8(char* dst, int32_t dst_size, const char16_t* src)
+{
+    int32_t cnt = 0;
+    const char16_t* wp = src;
+    char* cp = dst;
+
+    if (dst_size == 0)
+        return 0;
+
+    dst_size -= 3;
+
+    for (cnt = 0; cnt < dst_size;)
+    {
+        char16_t wc = *wp++;
+        if (wc == 0)
+        {
+            break;
+        }
+        if ((wc & ~0x7f) == 0)
+        {
+            if (cp)
+                *cp++ = wc & 0x7f;
+            cnt += 1;
+        }
+        else if ((wc & ~0x7ff) == 0)
+        {
+            if (cp) {
+                *cp++ = ((wc >> 6) & 0x1f) | 0xc0;
+                *cp++ = ((wc) & 0x3f) | 0x80;
+            }
+            cnt += 2;
+        }
+        else
+        {
+            if (cp) {
+                *cp++ = ((wc >> 12) & 0xf) | 0xe0;
+                *cp++ = ((wc >> 6) & 0x3f) | 0x80;
+                *cp++ = ((wc) & 0x3f) | 0x80;
+            }
+            cnt += 3;
+        }
+    }
+    *cp = '\0';
+    return cnt;
+}
+
+/**
+    @brief    Convert UTF8 into UTF16
+    @param    dst    a pointer to destination buffer
+    @param    dst_size    a length of destination buffer
+    @param    src            a source buffer
+    @return    length except 0
+*/
+int32_t tsConvertUtf8ToUtf16(char16_t* dst, int32_t dst_size, const char* src)
+{
+    int32_t i, code = 0;
+    int8_t c0, c1, c2 = 0;
+    int8_t* srci = reinterpret_cast<int8_t*>(const_cast<char*>(src));
+    if (dst_size == 0)
+        return 0;
+
+    dst_size -= 1;
+
+    for (i = 0; i < dst_size; i++)
+    {
+        uint16_t wc;
+
+        c0 = *srci;
+        srci++;
+        if (c0 == '\0')
+        {
+            break;
+        }
+        // convert UTF8 to UTF16
+        code = (uint8_t)c0 >> 4;
+        if (code <= 7)
+        {
+            // 8bit character
+            wc = c0;
+        }
+        else if (code >= 12 && code <= 13)
+        {
+            // 16bit  character
+            c1 = *srci;
+            srci++;
+            wc = ((c0 & 0x1F) << 6) | (c1 & 0x3F);
+        }
+        else if (code == 14)
+        {
+            // 24bit character
+            c1 = *srci;
+            srci++;
+            c2 = *srci;
+            srci++;
+            wc = ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+        }
+        else
+        {
+            continue;
+        }
+        if (dst)
+            dst[i] = wc;
+    }
+    if (dst)
+        dst[i] = 0;
+    return i;
+}
 
 //----------------------------------------------------------------------------
 
