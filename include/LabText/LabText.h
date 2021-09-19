@@ -354,7 +354,7 @@ private:
             curr = ScanForNonWhiteSpace(s);
             if (curr.sz == 0)
                 return curr; // parsing finished
-            if (curr.sz == ';') {
+            if (*curr.curr == ';') {
                 curr = ScanForBeginningOfNextLine(curr); // LISP comment
                 continue;
             }
