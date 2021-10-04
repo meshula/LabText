@@ -106,23 +106,30 @@ struct StrView
     char const* curr;
     size_t sz;
 
-    bool operator==(StrView const& rhs) const
-    {
+    bool begins(StrView const& rhs) const {
+        return sz <= rhs.sz && !strncmp(curr, rhs.curr, sz);
+    }
+
+    bool operator==(StrView const& rhs) const {
         return sz == rhs.sz && !strncmp(curr, rhs.curr, sz);
     }
-    bool operator!=(StrView const& rhs) const
-    {
+    bool operator!=(StrView const& rhs) const {
         return !(*this == rhs);
     }
-    bool operator==(const char* rhs) const
-    {
+
+    bool begins(const char* rhs) const {
+        if (!rhs)
+            return false;
+        return sz <= strlen(rhs) && !strncmp(curr, rhs, sz);
+    }
+
+    bool operator==(const char* rhs) const {
         if (!rhs)
             return false;
 
         return strlen(rhs) == sz && !strncmp(rhs, curr, sz);
     }
-    bool operator<(StrView const& rhs)
-    {
+    bool operator<(StrView const& rhs) {
         return strncmp(curr, rhs.curr, sz<rhs.sz?sz:rhs.sz) < 0;
     }
 };
