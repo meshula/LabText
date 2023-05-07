@@ -1,4 +1,5 @@
 
+#define LABTEXT_ODR
 #include "include/LabText/LabText.h"
 #include <stdio.h>
 

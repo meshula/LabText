@@ -584,6 +584,153 @@ struct StrView : public tsStrView_t
     }
 };
 
+typedef enum { 
+    tsSexprAtom = 0, 
+    tsSexprPushList, 
+    tsSexprPopList, 
+    tsSexprInteger, 
+    tsSexprFloat, 
+    tsSexprString } tsSexprToken_t;
+typedef struct tsParsedSexpr_t {
+    tsSexprToken_t token;
+    union {
+        int64_t i;
+        double f;
+        struct {
+            tsStrView_t str;
+        };
+    };
+    struct tsParsedSexpr_t* next;
+} tsParsedSexpr_t;
+
+tsParsedSexpr_t* tsParsedSexpr_New() {
+    tsParsedSexpr_t* result = (tsParsedSexpr_t*)malloc(sizeof(tsParsedSexpr_t));
+    // the token will be Atom, since tsSeexprAtom is 0.
+    memset(result, 0, sizeof(tsParsedSexpr_t));
+    return result;
+}
+
+// recursive sexpr parser. returns the next tsStrView_t to parse, following the
+// final matched closed paren beginnning at the supplied input s.
+tsStrView_t tsStrViewParseSexpr(tsStrView_t* s, tsParsedSexpr_t* currCell, int balance) {
+    if (!s || !s->sz || !s->curr || !currCell)
+        return (tsStrView_t){ NULL, 0 };
+
+    tsStrView_t curr = *s;
+    while (true) {
+        curr = tsStrViewScanForNonWhiteSpace(&curr);
+        if (curr.sz == 0)
+            return curr; // parsing finished
+        if (*curr.curr == ';') {
+            curr = tsStrViewScanForBeginningOfNextLine(&curr); // Lisp comment
+            continue;
+        }
+        if (*curr.curr != '(') {
+            curr.sz = 0; // stop parsing
+            return curr; // error
+        }
+        break;
+    }
+
+    // the loop above searched for an opening paren. now we parse the sexpr
+    currCell->next = tsParsedSexpr_New();
+    currCell->next->token = tsSexprPushList;
+    ++balance;
+
+    curr.curr += 1; // consume the discovered paren
+    curr.sz -= 1;
+
+    while (true) {
+        curr = tsStrViewScanForNonWhiteSpace(&curr);
+        if (curr.sz == 0)
+            return curr; // parsing finished
+        
+        if (*curr.curr == ';') {
+            curr = tsStrViewScanForBeginningOfNextLine(&curr); // Lisp comment
+            continue;
+        }
+
+        if (*curr.curr == '"') {
+            tsStrView_t str;
+            curr = tsStrViewGetString(&curr, true, &str); // parase a string, dealing with escaped characters
+            tsParsedSexpr_t* cell = tsParsedSexpr_New();
+            cell->token = tsSexprString;
+            cell->str = str;
+            currCell->next = cell;
+            currCell = cell;
+            continue;
+       }
+
+        if (*curr.curr == ')') {
+            curr.curr += 1; // consume the discovered paren
+            curr.sz -= 1;
+            --balance;
+            tsParsedSexpr_t* cell = tsParsedSexpr_New();
+            cell->token = tsSexprPopList;
+            currCell->next = cell;
+            currCell = cell;
+            continue;
+        }
+
+        if (*curr.curr == '(') {
+            curr = tsStrViewParseSexpr(&curr, currCell->next, balance);
+            continue;
+        }
+
+        // consume a token, stopping at white space, parens, or semicolons
+        tsStrView_t token = curr;
+        token.sz = 0;
+        while (curr.sz > 0) {
+            if (*curr.curr == '(' || *curr.curr == ')' || *curr.curr == ';' || tsIsWhiteSpace(*curr.curr))
+                break;
+            curr.curr += 1;
+            curr.sz -= 1;
+            token.sz += 1;
+        }
+
+        // if there wasn't a token, it must've been a paren or semicolon, or white space
+        if (token.sz == 0)
+            continue;
+
+        // try to parse the token as a float
+        float f;
+        tsStrView_t test = tsStrViewGetFloat(&token, &f);
+        if (test.curr != token.curr) {
+            tsParsedSexpr_t* cell = tsParsedSexpr_New();
+            cell->token = tsSexprFloat;
+            cell->f = f;
+            currCell->next = cell;
+            currCell = cell;
+            curr.curr = test.curr;
+            curr.sz -= test.sz;
+            curr = tsStrViewScanForNonWhiteSpace(&curr);
+            continue;
+        }
+
+        int32_t i;
+        test = tsStrViewGetInt32(&token, &i);
+        if (test.curr != token.curr) {
+            tsParsedSexpr_t* cell = tsParsedSexpr_New();
+            cell->token = tsSexprInteger;
+            cell->i = i;
+            currCell->next = cell;
+            currCell = cell;
+            curr.curr = test.curr;
+            curr.sz -= test.sz;
+            curr = tsStrViewScanForNonWhiteSpace(&curr);
+            continue;
+        }
+
+        // assume it is an atom
+        tsParsedSexpr_t* cell = tsParsedSexpr_New();
+        cell->token = tsSexprAtom;
+        cell->str = token;
+        currCell->next = cell;
+        currCell = cell;
+        // curr.curr is already pointing at the end of the atom, simply scan ahead
+        curr = tsStrViewScanForNonWhiteSpace(&curr);
+    }
+}
 
 std::vector<StrView> Split(StrView s, char split);
 
