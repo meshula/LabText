@@ -23,19 +23,18 @@ License BSD-2 Clause.
 
 */
 
-#ifdef _MSC_VER
-    // provide some C99 types
-    typedef unsigned int uint32_t;
-    typedef int int32_t;
-    typedef unsigned short uint16_t;
-    typedef short int16_t;
-    typedef bool _Bool;
-#else
-    #include <stdint.h>
-    #include <stdbool.h>
-    #if defined(__cplusplus) && !defined(_Bool)
-        #define _Bool bool
+#ifdef __cplusplus
+    #if __cplusplus < 201402
+        #error "This library requires C++14 or later."
     #endif
+#endif
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#if defined(__cplusplus) && !defined(_Bool)
+    #define _Bool bool
 #endif
 
 #ifndef EXTERNC
@@ -91,8 +90,325 @@ EXTERNC _Bool tsIsAlpha     (char test);
 EXTERNC _Bool tsIsIn        (const char* testString, char test);
 
 // These UTF conversions return length. If dst is nullptr, the routines can be used for measuring a conversion
-EXTERNC int32_t tsConvertUtf8ToUtf16(char16_t* dst, int32_t dst_size, const char* src);
-EXTERNC int32_t tsConvertUtf16ToUtf8(char* dst, int32_t dst_size, const char16_t* src);
+EXTERNC int32_t tsConvertUtf8ToUtf16(uint16_t* dst, int32_t dst_size, const char* src);
+EXTERNC int32_t tsConvertUtf16ToUtf8(char* dst, int32_t dst_size, const uint16_t* src);
+
+typedef struct tsStrView_t {
+    const char *curr;
+    size_t sz;
+} tsStrView_t;
+
+inline _Bool tsStrViewBegins(const tsStrView_t *s, const tsStrView_t *rhs) {
+    return s->sz <= rhs->sz && strncmp(s->curr, rhs->curr, s->sz) == 0;
+}
+
+inline _Bool tsStrViewEqual(const tsStrView_t *s, const tsStrView_t *rhs) {
+    return s->sz == rhs->sz && strncmp(s->curr, rhs->curr, s->sz) == 0;
+}
+
+inline _Bool tsStrViewNotEqual(const tsStrView_t *s, const tsStrView_t *rhs) {
+    return !tsStrViewEqual(s, rhs);
+}
+
+inline _Bool tsStrViewBeginsCharPtr(const tsStrView_t *s, const char *rhs) {
+    if (rhs == NULL) {
+        return 0;
+    }
+    return s->sz <= strlen(rhs) && strncmp(s->curr, rhs, s->sz) == 0;
+}
+
+inline _Bool tsStrViewEqualCharPtr(const tsStrView_t *s, const char *rhs) {
+    if (rhs == NULL) {
+        return 0;
+    }
+    return s->sz == strlen(rhs) && strncmp(rhs, s->curr, s->sz) == 0 ;
+}
+
+inline _Bool tsStrViewLessThan(const tsStrView_t *s, const tsStrView_t *rhs) {
+    int cmp = strncmp(s->curr, rhs->curr, s->sz < rhs->sz ? s->sz : rhs->sz);
+    return cmp < 0;
+}
+
+inline _Bool tsStrViewIsEmpty(const tsStrView_t *s) {
+    return (s->curr == NULL) || (s->sz == 0);
+}
+
+inline tsStrView_t tsStrViewGetToken(const tsStrView_t *s, char delim, tsStrView_t *result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    uint32_t sz;
+    char const* next = tsGetToken(s->curr, s->curr + s->sz, delim, &result->curr, &sz);
+    result->sz = sz;
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetTokenWSDelimited(const tsStrView_t *s, tsStrView_t *result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    uint32_t sz;
+    char const* next = tsGetTokenWSDelimited(s->curr, s->curr + s->sz, &result->curr, &sz);
+    result->sz = sz;
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetTokenAlphaNumeric(const tsStrView_t* s, tsStrView_t* result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    uint32_t sz;
+    char const* next = tsGetTokenAlphaNumeric(s->curr, s->curr + s->sz, &result->curr, &sz);
+    result->sz = sz;
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetTokenAlphaNumericExt(const tsStrView_t* s, char const* ext,  tsStrView_t* result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    uint32_t sz;
+    char const* next = tsGetTokenAlphaNumericExt(s->curr, s->curr + s->sz, ext, &result->curr, &sz);
+    result->sz = sz;
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetTokenExt(const tsStrView_t* s, char const* ext, tsStrView_t* result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    uint32_t sz;
+    char const* next = tsGetTokenExt(s->curr, s->curr + s->sz, ext, &result->curr, &sz);
+    result->sz = sz;
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetNameSpacedTokenAlphaNumeric(const tsStrView_t* s, char namespaceChar, tsStrView_t* result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    uint32_t sz;
+    char const* next = tsGetNameSpacedTokenAlphaNumeric(s->curr, s->curr + s->sz, namespaceChar, &result->curr, &sz);
+    result->sz = sz;
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetString(const tsStrView_t* s, bool recognizeEscapes, tsStrView_t* result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    uint32_t sz;
+    char const* next = tsGetString(s->curr, s->curr + s->sz, recognizeEscapes, &result->curr, &sz);
+    result->sz = sz;
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetString2(const tsStrView_t* s, char strDelim, bool recognizeEscapes, tsStrView_t* result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    uint32_t sz;
+    char const* next = tsGetString2(s->curr, s->curr + s->sz, strDelim, recognizeEscapes, &result->curr, &sz);
+    result->sz = sz;
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetInt16(const tsStrView_t* s, int16_t* result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsGetInt16(s->curr, s->curr + s->sz, result);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetInt32(const tsStrView_t* s, int32_t* result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsGetInt32(s->curr, s->curr + s->sz, result);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetUInt32(const tsStrView_t* s, uint32_t* result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsGetUInt32(s->curr, s->curr + s->sz, result);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetHex(const tsStrView_t* s, uint32_t* result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsGetHex(s->curr, s->curr + s->sz, result);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewGetFloat(const tsStrView_t* s, float* result) {
+    if (!s || !result) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsGetFloat(s->curr, s->curr + s->sz, result);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanForCharacter(const tsStrView_t* s, char c) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsScanForCharacter(s->curr, s->curr + s->sz, c);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanBackwardsForCharacter(const tsStrView_t* s, char c) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsScanBackwardsForCharacter(s->curr, s->curr + s->sz, c);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanForWhiteSpace(const tsStrView_t* s) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsScanForWhiteSpace(s->curr, s->curr + s->sz);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanBackwardsForWhiteSpace(const tsStrView_t* s) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsScanBackwardsForWhiteSpace(s->curr, s->curr + s->sz);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanForNonWhiteSpace(const tsStrView_t* s) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsScanForNonWhiteSpace(s->curr, s->curr + s->sz);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanForTrailingNonWhiteSpace(const tsStrView_t* s) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsScanForTrailingNonWhiteSpace(s->curr, s->curr + s->sz);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanForQuote(const tsStrView_t* s, char delim, bool recognizeEscapes) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsScanForQuote(s->curr, s->curr + s->sz, delim, recognizeEscapes);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanForEndOfLine(const tsStrView_t* s) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsScanForEndOfLine(s->curr, s->curr + s->sz);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanForEndOfLineSkipped(const tsStrView_t* s, tsStrView_t* skipped) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    if (!skipped) {
+        return tsStrViewScanForEndOfLine(s);
+    }
+    char const* next = tsScanForEndOfLine(s->curr, s->curr + s->sz);
+    skipped->curr = s->curr;
+    skipped->sz = (size_t) (next - s->curr);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanForLastCharacterOnLine(const tsStrView_t* s) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsScanForLastCharacterOnLine(s->curr, s->curr + s->sz);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanForBeginningOfNextLine(const tsStrView_t* s) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsScanForBeginningOfNextLine(s->curr, s->curr + s->sz);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanPastCPPComments(const tsStrView_t* s) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next;
+    next = tsScanPastCPPComments(s->curr, s->curr + s->sz);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewScanPastCPPCommentsSkipped(const tsStrView_t* s, tsStrView_t* skipped) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    if (!skipped) {
+        return tsStrViewScanPastCPPComments(s);
+    }
+    char const* next;
+    next = tsScanPastCPPComments(s->curr, s->curr + s->sz);
+    skipped->curr = s->curr;
+    skipped->sz = (size_t) (next - s->curr);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewSkipCommentsAndWhiteSpace(const tsStrView_t* s) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    tsStrView_t result = tsStrViewScanPastCPPComments(s);
+    result = tsStrViewScanForNonWhiteSpace(&result);
+    return result;
+}
+
+inline tsStrView_t tsStrViewSkipCommentsAndWhiteSpaceSkipped(const tsStrView_t* s, tsStrView_t* skipped) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    tsStrView_t result = tsStrViewScanPastCPPCommentsSkipped(s, skipped);
+    result = tsStrViewScanForNonWhiteSpace(&result);
+    return result;
+}
+
+inline tsStrView_t tsStrViewExpect(const tsStrView_t* s, const tsStrView_t* expect) {
+    if (!s || !expect || s->sz < expect->sz) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    char const* next = tsExpect(s->curr, s->curr + s->sz, expect->curr);
+    return (tsStrView_t){ next, (size_t) (s->curr + s->sz - next) };
+}
+
+inline tsStrView_t tsStrViewStrip(const tsStrView_t* s) {
+    if (!s) {
+        return (tsStrView_t){ NULL, 0 };
+    }
+    tsStrView_t result = tsStrViewScanForNonWhiteSpace(s);
+    while (result.sz > 0) {
+        if (!tsIsWhiteSpace(result.curr[result.sz - 1])) {
+            break;
+        }
+        --result.sz;
+    }
+    return result;
+}
+
 
 
 #ifdef __cplusplus
@@ -101,235 +417,173 @@ EXTERNC int32_t tsConvertUtf16ToUtf8(char* dst, int32_t dst_size, const char16_t
 #include <vector>
 
 namespace lab { namespace Text {
-struct StrView
+
+// StrView provides a non-owning view on a memory range meant to be
+// interpreted as a UTF8 string. 
+struct StrView : public tsStrView_t
 {
-    char const* curr;
-    size_t sz;
+    StrView() {
+        curr = nullptr;
+        sz = 0;
+    }
+    StrView(const char* str) {
+        curr = str;
+        sz = strlen(str);
+    }
+    StrView(const char* str, size_t len) {
+        curr = str;
+        sz = len;
+    }
+    StrView(const std::string& str) {
+        curr = str.c_str();
+        sz = str.size();
+    }
+    StrView(const tsStrView_t& str) {
+        curr = str.curr;
+        sz = str.sz;
+    }
+    StrView(const StrView& str) {
+        curr = str.curr;
+        sz = str.sz;
+    }
+    StrView(StrView&& str) {
+        curr = str.curr;
+        sz = str.sz;
+    }
+
+    // copy assignment
+    StrView& operator=(const StrView& str) {
+        curr = str.curr;
+        sz = str.sz;
+        return *this;
+    }
 
     bool begins(StrView const& rhs) const {
-        return sz <= rhs.sz && !strncmp(curr, rhs.curr, sz);
+        return tsStrViewBegins(this, &rhs);
+    }
+    bool begins(const char* rhs) const {
+        return (rhs != nullptr) && tsStrViewBeginsCharPtr(this, rhs);
     }
 
     bool operator==(StrView const& rhs) const {
-        return sz == rhs.sz && !strncmp(curr, rhs.curr, sz);
+        return tsStrViewEqual(this, &rhs);
     }
-    bool operator!=(StrView const& rhs) const {
-        return !(*this == rhs);
-    }
-
-    bool begins(const char* rhs) const {
-        if (!rhs)
-            return false;
-        return sz <= strlen(rhs) && !strncmp(curr, rhs, sz);
-    }
-
     bool operator==(const char* rhs) const {
-        if (!rhs)
-            return false;
+        return (rhs != nullptr) && tsStrViewEqualCharPtr(this, rhs);
+    }
 
-        return strlen(rhs) == sz && !strncmp(rhs, curr, sz);
+    bool operator!=(StrView const& rhs) const {
+        return tsStrViewNotEqual(this, &rhs);
+    }
+    bool operator!=(const char* rhs) const {
+        return (rhs != nullptr) && !tsStrViewEqualCharPtr(this, rhs);
     }
     bool operator<(StrView const& rhs) {
-        return strncmp(curr, rhs.curr, sz<rhs.sz?sz:rhs.sz) < 0;
+        return tsStrViewLessThan(this, &rhs);
+    }
+    bool operator<(const char* rhs) {
+        if (!rhs) {
+            return false;
+        }
+        tsStrView_t rhView = { rhs, strlen(rhs) };
+        return tsStrViewLessThan(this, &rhView);
+    }
+
+    bool IsEmpty() const {
+        return tsStrViewIsEmpty(this);
+    }
+    StrView GetToken(char delim, StrView& result) const {
+        return tsStrViewGetToken(this, delim, static_cast<tsStrView_t*>(&result));
+    } 
+    StrView GetTokenWSDelimited(char delim, StrView& result) const {
+        return tsStrViewGetTokenWSDelimited(this, static_cast<tsStrView_t*>(&result));
+    }
+    StrView GetTokenAlphaNumeric(StrView& result) const {
+        return tsStrViewGetTokenAlphaNumeric(this, static_cast<tsStrView_t*>(&result));
+    }
+    StrView GetTokenAlphaNumericExt(char const* ext, StrView& result) const {
+        return tsStrViewGetTokenAlphaNumericExt(this, ext, static_cast<tsStrView_t*>(&result));
+    }
+    StrView GetTokenExt(char const* ext, StrView& result) const {
+        return tsStrViewGetTokenExt(this, ext, static_cast<tsStrView_t*>(&result));
+    }
+    StrView GetNameSpacedTokenAlphaNumeric(char namespaceChar, StrView& result) const {
+        return tsStrViewGetNameSpacedTokenAlphaNumeric(this, namespaceChar, static_cast<tsStrView_t*>(&result));
+    }
+    StrView GetString(bool recognizeEscapes, StrView& result) const {
+        return tsStrViewGetString(this, recognizeEscapes, static_cast<tsStrView_t*>(&result));
+    }
+    StrView GetString2(char namespaceChar, char strDelim, bool recognizeEscapes, StrView& result) const {
+        return tsStrViewGetString2(this, strDelim, recognizeEscapes, static_cast<tsStrView_t*>(&result));
+    }
+    StrView GetInt16(int16_t& result) const {
+        return tsStrViewGetInt16(this, &result);
+    }
+    StrView GetInt32(int32_t& result) const {
+        return tsStrViewGetInt32(this, &result);
+    }
+    StrView GetUInt32(uint32_t& result) const {
+        return tsStrViewGetUInt32(this, &result);
+    }
+    StrView GetHex(uint32_t& result) const {
+        return tsStrViewGetHex(this, &result);
+    }
+    StrView GetFloat(float& result) const {
+        return tsStrViewGetFloat(this, &result);
+    }
+    StrView ScanForCharacter(char c) const {
+        return tsStrViewScanForCharacter(this, c);
+    }
+    StrView ScanBackwardsForCharacter(char c) const {
+        return tsStrViewScanBackwardsForCharacter(this, c);
+    }
+    StrView ScanForWhiteSpace() const {
+        return tsStrViewScanForWhiteSpace(this);
+    }
+    StrView ScanBackwardsForWhiteSpace() const {
+        return tsStrViewScanBackwardsForWhiteSpace(this);
+    }
+    StrView ScanForNonWhiteSpace() const {
+        return tsStrViewScanForNonWhiteSpace(this);
+    }
+    StrView ScanForTrailingNonWhiteSpace() const {
+        return tsStrViewScanForTrailingNonWhiteSpace(this);
+    }
+    StrView ScanForQuote(char delim, bool recognizeEscapes) const {
+        return tsStrViewScanForQuote(this, delim, recognizeEscapes);
+    }
+    StrView ScanForEndOfLine() const {
+        return tsStrViewScanForEndOfLine(this);
+    }
+    StrView ScaneForEndofLine(StrView& skipped) {
+        return tsStrViewScanForEndOfLineSkipped(this, static_cast<tsStrView_t*>(&skipped));
+    }
+    StrView ScanForLastCharacterOnLine() const {
+        return tsStrViewScanForLastCharacterOnLine(this);
+    }
+    StrView ScanForBeginningOfNextLine() const {
+        return tsStrViewScanForBeginningOfNextLine(this);
+    }
+    StrView ScanPastCPPComments() const {
+        return tsScanPastCPPComments(this->curr, this->curr + this->sz);
+    }
+    StrView ScanPastCPPComments(StrView& skipped) const {
+        return tsStrViewScanPastCPPCommentsSkipped(this, static_cast<tsStrView_t*>(&skipped));
+    }
+    StrView SkipCommentsAndWhiteSpace() const {
+        return tsStrViewSkipCommentsAndWhiteSpace(this);
+    }
+    StrView SkipCommentsAndWhitespace(StrView& skipped) const {
+        return tsStrViewSkipCommentsAndWhiteSpaceSkipped(this, static_cast<tsStrView_t*>(&skipped));
+    }
+    StrView Expect(StrView& expect) const {
+        return tsStrViewExpect(this, &expect);
+    }
+    StrView Strip() const {
+        return tsStrViewStrip(this);
     }
 };
 
-inline bool IsEmpty(StrView const& s)
-{
-    return (s.curr == nullptr) || (s.sz == 0);
-}
-
-inline StrView GetToken(StrView s, char delim, StrView& result)
-{
-    uint32_t sz;
-    char const* next = tsGetToken(s.curr, s.curr + s.sz, delim, &result.curr, &sz);
-    result.sz = sz;
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetTokenWSDelimited(StrView s, char delim, StrView& result)
-{
-    uint32_t sz;
-    char const* next = tsGetTokenWSDelimited(s.curr, s.curr + s.sz, &result.curr, &sz);
-    result.sz = sz;
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetTokenAlphaNumeric(StrView s, StrView& result)
-{
-    uint32_t sz;
-    char const* next = tsGetTokenAlphaNumeric(s.curr, s.curr + s.sz, &result.curr, &sz);
-    result.sz = sz;
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetTokenAlphaNumericExt (StrView s, char const* ext, StrView& result)
-{
-    uint32_t sz;
-    char const* next = tsGetTokenAlphaNumericExt(s.curr, s.curr + s.sz, ext, &result.curr, &sz);
-    result.sz = sz;
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetTokenExt(StrView s, char const* ext, StrView& result)
-{
-    uint32_t sz;
-    char const* next = tsGetTokenExt(s.curr, s.curr + s.sz, ext, &result.curr, &sz);
-    result.sz = sz;
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetNameSpacedTokenAlphaNumeric(StrView s, char namespaceChar, StrView& result)
-{
-    uint32_t sz;
-    char const* next = tsGetNameSpacedTokenAlphaNumeric(s.curr, s.curr + s.sz, namespaceChar, &result.curr, &sz);
-    result.sz = sz;
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetString(StrView s, bool recognizeEscapes, StrView& result)
-{
-    uint32_t sz;
-    char const* next = tsGetString(s.curr, s.curr + s.sz, recognizeEscapes, &result.curr, &sz);
-    result.sz = sz;
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetString2(StrView s, char namespaceChar, char strDelim, bool recognizeEscapes, StrView& result)
-{
-    uint32_t sz;
-    char const* next = tsGetString2(s.curr, s.curr + s.sz, strDelim, recognizeEscapes, &result.curr, &sz);
-    result.sz = sz;
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetInt16(StrView s, int16_t& result)
-{
-    char const* next = tsGetInt16(s.curr, s.curr + s.sz, &result);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetInt32(StrView s, int32_t& result)
-{
-    char const* next = tsGetInt32(s.curr, s.curr + s.sz, &result);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetUInt32(StrView s, uint32_t& result)
-{
-    char const* next = tsGetUInt32(s.curr, s.curr + s.sz, &result);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetHex(StrView s, uint32_t& result)
-{
-    char const* next = tsGetHex(s.curr, s.curr + s.sz, &result);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView GetFloat(StrView s, float& result)
-{
-    char const* next = tsGetFloat(s.curr, s.curr + s.sz, &result);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanForCharacter(StrView s, char delim)
-{
-    char const* next = tsScanForCharacter(s.curr, s.curr + s.sz, delim);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanBackwardsForCharacter(StrView s, char delim)
-{
-    char const* next = tsScanBackwardsForCharacter(s.curr, s.curr + s.sz, delim);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanForWhiteSpace(StrView s)
-{
-    char const* next = tsScanForWhiteSpace(s.curr, s.curr + s.sz);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanBackwardsForWhiteSpace(StrView s)
-{
-    char const* next = tsScanBackwardsForWhiteSpace(s.curr, s.curr + s.sz);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanForNonWhiteSpace(StrView s)
-{
-    char const* next = tsScanForNonWhiteSpace(s.curr, s.curr + s.sz);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanForTrailingNonWhiteSpace(StrView s)
-{
-    char const* next = tsScanForTrailingNonWhiteSpace(s.curr, s.curr + s.sz);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanForQuote(StrView s, char delim, bool recognizeEscapes)
-{
-    char const* next = tsScanForQuote(s.curr, s.curr + s.sz, delim, recognizeEscapes);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanForEndOfLine(StrView s)
-{
-    char const* next = tsScanForEndOfLine(s.curr, s.curr + s.sz);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanForEndOfLine(StrView s, StrView& skipped)
-{
-    skipped = s;
-    char const* next = tsScanForEndOfLine(s.curr, s.curr + s.sz);
-    skipped.sz = next - skipped.curr;
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanForLastCharacterOnLine(StrView s)
-{
-    char const* next = tsScanForLastCharacterOnLine(s.curr, s.curr + s.sz);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanForBeginningOfNextLine(StrView s)
-{
-    char const* next = tsScanForBeginningOfNextLine(s.curr, s.curr + s.sz);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView ScanPastCPPComments(StrView s)
-{
-    char const* next = tsScanPastCPPComments(s.curr, s.curr + s.sz);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView SkipCommentsAndWhitespace(StrView s)
-{
-    char const* next = tsSkipCommentsAndWhitespace(s.curr, s.curr + s.sz);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView Expect(StrView s, StrView expect)
-{
-    char const* next = tsExpect(s.curr, s.curr + s.sz, expect.curr);
-    return { next, static_cast<size_t>(s.curr + s.sz - next) };
-}
-
-inline StrView Strip(StrView s)
-{
-    StrView result = ScanForNonWhiteSpace(s);
-    while (result.sz > 0)
-    {
-        if (!tsIsWhiteSpace(result.curr[result.sz - 1]))
-            break;
-        --result.sz;
-    }
-    return result;
-}
 
 std::vector<StrView> Split(StrView s, char split);
 
@@ -358,11 +612,11 @@ private:
     StrView Parse(StrView s) {
         StrView curr = s;
         while (true) {
-            curr = ScanForNonWhiteSpace(s);
+            curr = curr.ScanForNonWhiteSpace();
             if (curr.sz == 0)
                 return curr; // parsing finished
             if (*curr.curr == ';') {
-                curr = ScanForBeginningOfNextLine(curr); // LISP comment
+                curr = curr.ScanForBeginningOfNextLine(); // LISP comment
                 continue;
             }
             if (*curr.curr != '(') {
@@ -378,17 +632,17 @@ private:
         curr.sz--;
 
         while (true) {
-            curr = ScanForNonWhiteSpace(curr);
+            curr = curr.ScanForNonWhiteSpace();
             if (curr.sz == 0)
                 return curr;
 
             if (*curr.curr == ';') {
-                curr = ScanForNonWhiteSpace(ScanForBeginningOfNextLine(curr));
+                curr = curr.ScanForBeginningOfNextLine().ScanForNonWhiteSpace();
                 continue;
             }
             if (*curr.curr == '"') {
                 StrView str;
-                curr = ScanForNonWhiteSpace(GetString(curr, true, str));
+                curr = curr.GetString(true, str).ScanForNonWhiteSpace();
                 expr.push_back({ String, (int)strings.size() });
                 strings.push_back(std::string(str.curr, str.sz));
                 if (curr.sz == 0)
@@ -428,7 +682,7 @@ private:
                 continue;
 
             float f;
-            StrView test = GetFloat(token, f);
+            StrView test = token.GetFloat(f);
             if (test.curr != token.curr) {
                 expr.push_back({ Float, (int)floats.size() });
                 floats.push_back(f);
@@ -437,7 +691,7 @@ private:
             }
             else {
                 int32_t i;
-                StrView test = GetInt32(token, i);
+                StrView test = token.GetInt32(i);
                 if (test.curr != token.curr) {
                     expr.push_back({ Integer, (int)ints.size() });
                     ints.push_back(i);
@@ -449,7 +703,7 @@ private:
                     strings.push_back(std::string(token.curr, token.sz));
                 }
             }
-            curr = ScanForNonWhiteSpace(curr);
+            curr = curr.ScanForNonWhiteSpace();
         }
     }
 };
@@ -511,10 +765,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     @param    src            a source buffer
     @return    length except 0
 */
-int32_t tsConvertUtf16ToUtf8(char* dst, int32_t dst_size, const char16_t* src)
+int32_t tsConvertUtf16ToUtf8(char* dst, int32_t dst_size, const uint16_t* src)
 {
     int32_t cnt = 0;
-    const char16_t* wp = src;
+    const uint16_t* wp = src;
     char* cp = dst;
 
     if (dst_size == 0)
@@ -524,7 +778,7 @@ int32_t tsConvertUtf16ToUtf8(char* dst, int32_t dst_size, const char16_t* src)
 
     for (cnt = 0; cnt < dst_size;)
     {
-        char16_t wc = *wp++;
+        uint16_t wc = *wp++;
         if (wc == 0)
         {
             break;
@@ -564,11 +818,15 @@ int32_t tsConvertUtf16ToUtf8(char* dst, int32_t dst_size, const char16_t* src)
     @param    src            a source buffer
     @return    length except 0
 */
-int32_t tsConvertUtf8ToUtf16(char16_t* dst, int32_t dst_size, const char* src)
+int32_t tsConvertUtf8ToUtf16(uint16_t* dst, int32_t dst_size, const char* src)
 {
     int32_t i, code = 0;
     int8_t c0, c1, c2 = 0;
+    #ifdef __cplusplus
     int8_t* srci = reinterpret_cast<int8_t*>(const_cast<char*>(src));
+    #else
+    int8_t* srci = (int8_t*) src;
+    #endif
     if (dst_size == 0)
         return 0;
 
@@ -1235,7 +1493,7 @@ _Bool tsIsAlpha(char test)
     return ((test >= 'a' && test <= 'z') || (test >= 'A' && test <= 'Z'));
 }
 
-
+#ifdef __cplusplus
 namespace lab { namespace Text {
 std::vector<StrView> Split(StrView s, char splitter)
 {
@@ -1268,6 +1526,7 @@ std::vector<StrView> Split(StrView s, char splitter)
     return result;
 }
 }} // lab::Text
+#endif
 
 #endif // LABTEXT_ODR
 
