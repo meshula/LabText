@@ -74,15 +74,41 @@ int main() {
     lab::Text::Sexpr s(lab::Text::StrView{test, strlen(test)});
     for (auto& e : s.expr) {
         switch (e.token) {
-        case lab::Text::Sexpr::PushList: printf("("); break;
-        case lab::Text::Sexpr::PopList: printf(")"); break;
-        case lab::Text::Sexpr::Integer: printf("%d ", s.ints[e.ref]); break;
-        case lab::Text::Sexpr::Float: printf("%f ", s.floats[e.ref]); break;
-        case lab::Text::Sexpr::String: printf("\"%s\" ", s.strings[e.ref].c_str()); break;
-        case lab::Text::Sexpr::Atom: printf("%s ", s.strings[e.ref].c_str()); break;
+        case tsSexprPushList: printf("("); break;
+        case tsSexprPopList: printf(")"); break;
+        case tsSexprInteger: printf("%d ", s.ints[e.ref]); break;
+        case tsSexprFloat: printf("%f ", s.floats[e.ref]); break;
+        case tsSexprString: printf("\"%s\" ", s.strings[e.ref].c_str()); break;
+        case tsSexprAtom: printf("%s ", s.strings[e.ref].c_str()); break;
         }
     }
-    printf("\n");
+    printf("\n----------------\n");
 
+    tsParsedSexpr_t* parsed = tsParsedSexpr_New();
+    parsed->token = tsSexprAtom;
+    tsStrView_t str = (tsStrView_t){test, strlen(test)};
+
+    /*tsStrView_t end_of_str =*/ tsStrViewParseSexpr(&str, parsed, 0);
+    tsParsedSexpr_t* curr = parsed;
+    while (curr->next) {
+        switch (curr->token) {
+        case tsSexprAtom: {
+            std::string s = std::string(curr->str.curr, curr->str.sz);
+            printf("%s ", s.c_str());
+            break;
+        }
+        case tsSexprPushList: printf("("); break;
+        case tsSexprPopList: printf(")"); break;
+        case tsSexprInteger: printf("%lld ", curr->i); break;
+        case tsSexprFloat: printf("%f ", curr->f); break;
+        case tsSexprString: {
+            std::string s = std::string(curr->str.curr, curr->str.sz);
+            printf("\"%s\" ", s.c_str());
+            break;
+        }
+        }
+        curr = curr->next;
+    } // while
+    printf("\n");
     return 0;
 }
