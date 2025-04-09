@@ -26,6 +26,7 @@ set_target_properties(
         OUTPUT_NAME_DEBUG "LabText_d"
         INTERFACE_INCLUDE_DIRECTORIES ${LABTEXT_ROOT}/include
 )
+target_compile_features(LabText PRIVATE cxx_std_17)
 
 add_library(Lab::Text ALIAS LabText)
 
@@ -44,4 +45,4 @@ install(FILES
 
 add_executable(TestSexpr TestSexpr.cpp)
 target_link_libraries(TestSexpr Lab::Text)
-
+target_compile_features(TestSexpr PRIVATE cxx_std_17)
