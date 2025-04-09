@@ -45,3 +45,5 @@ install(FILES
 add_executable(TestSexpr TestSexpr.cpp)
 target_link_libraries(TestSexpr Lab::Text)
 
+add_executable(Landru Landru.cpp)
+target_link_libraries(Landru Lab::Text)
