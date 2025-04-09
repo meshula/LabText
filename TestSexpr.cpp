@@ -90,7 +90,7 @@ int main() {
 
     /*tsStrView_t end_of_str =*/ tsStrViewParseSexpr(&str, parsed, 0);
     tsParsedSexpr_t* curr = parsed;
-    while (curr->next) {
+    while (curr) {
         switch (curr->token) {
         case tsSexprAtom: {
             std::string s = std::string(curr->str.curr, curr->str.sz);
