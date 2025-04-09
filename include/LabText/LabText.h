@@ -332,7 +332,7 @@ struct StrView : public tsStrView_t
     StrView ScanForEndOfLine() const {
         return tsStrViewScanForEndOfLine(this);
     }
-    StrView ScaneForEndofLine(StrView& skipped) {
+    StrView ScanForEndofLine(StrView& skipped) {
         return tsStrViewScanForEndOfLineSkipped(this, static_cast<tsStrView_t*>(&skipped));
     }
     StrView ScanForLastCharacterOnLine() const {
@@ -353,7 +353,7 @@ struct StrView : public tsStrView_t
     StrView SkipCommentsAndWhitespace(StrView& skipped) const {
         return tsStrViewSkipCommentsAndWhiteSpaceSkipped(this, static_cast<tsStrView_t*>(&skipped));
     }
-    StrView Expect(StrView& expect) const {
+    StrView Expect(const StrView& expect) const {
         return tsStrViewExpect(this, &expect);
     }
     StrView Strip() const {
